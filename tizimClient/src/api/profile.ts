@@ -1,5 +1,5 @@
 import { api } from "./axios";
-import type { AuthResponse } from "@/types";
+import type { AccessTokenResponse } from "@/types";
 
 export const profileApi = {
   update: (firstName: string | null, lastName: string | null) =>
@@ -9,5 +9,5 @@ export const profileApi = {
     ).then((r) => r.data),
 
   setCredentials: (email: string, password: string) =>
-    api.post<AuthResponse>("/users/me/credentials", { email, password }).then((r) => r.data),
+    api.post<AccessTokenResponse>("/users/me/credentials", { email, password }).then((r) => r.data),
 };

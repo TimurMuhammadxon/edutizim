@@ -10,9 +10,10 @@ export interface AuthUser {
   lastName?: string;
 }
 
-export interface AuthResponse {
+// The refresh token never reaches JS — it travels only as an httpOnly cookie set
+// alongside this response.
+export interface AccessTokenResponse {
   accessToken: string;
-  refreshToken: string;
   expiresIn: number;
 }
 

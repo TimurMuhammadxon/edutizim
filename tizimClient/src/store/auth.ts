@@ -5,9 +5,12 @@ import { decodeJwt } from "@/lib/jwt";
 
 interface AuthState {
   accessToken: string | null;
-  refreshToken: string | null;
+  // The refresh token itself lives only in an httpOnly cookie, invisible to JS. This
+  // flag just remembers "a session cookie was issued" so route guards / session
+  // recovery know a silent refresh is worth attempting, without ever holding the token.
+  hasSession: boolean;
   user: AuthUser | null;
-  setTokens: (accessToken: string, refreshToken: string) => void;
+  setTokens: (accessToken: string) => void;
   clearAuth: () => void;
   isAuthenticated: () => boolean;
   hasRole: (...roles: string[]) => boolean;
@@ -31,15 +34,15 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       accessToken: null,
-      refreshToken: null,
+      hasSession: false,
       user: null,
 
-      setTokens: (accessToken, refreshToken) => {
+      setTokens: (accessToken) => {
         const user = parseUser(accessToken);
-        set({ accessToken, refreshToken, user });
+        set({ accessToken, hasSession: true, user });
       },
 
-      clearAuth: () => set({ accessToken: null, refreshToken: null, user: null }),
+      clearAuth: () => set({ accessToken: null, hasSession: false, user: null }),
 
       isAuthenticated: () => {
         const { accessToken } = get();
@@ -59,7 +62,7 @@ export const useAuthStore = create<AuthState>()(
       name: "auth-storage",
       partialize: (state) => ({
         accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
+        hasSession: state.hasSession,
         user: state.user,
       }),
     }

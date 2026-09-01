@@ -7,6 +7,7 @@ export const api = axios.create({
   baseURL: "/api",
   headers: { "Content-Type": "application/json" },
   timeout: 20000,
+  withCredentials: true, // sends/receives the httpOnly refresh-token cookie
 });
 
 api.interceptors.request.use((config) => {

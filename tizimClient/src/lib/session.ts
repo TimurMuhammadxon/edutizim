@@ -2,12 +2,12 @@ import axios from "axios";
 import { useAuthStore } from "@/store/auth";
 import { decodeJwt } from "@/lib/jwt";
 
-// Bare axios (no interceptors) to avoid recursion during refresh.
-const bare = axios.create({ baseURL: "/api", timeout: 20000 });
+// Bare axios (no interceptors) to avoid recursion during refresh. withCredentials so the
+// httpOnly refresh-token cookie is sent.
+const bare = axios.create({ baseURL: "/api", timeout: 20000, withCredentials: true });
 
 interface Tokens {
   accessToken: string;
-  refreshToken: string;
 }
 
 // Time before real expiry at which we treat the access token as stale (ms).
@@ -25,15 +25,15 @@ function accessTokenValid(): string | null {
   return payload.exp * 1000 > Date.now() + EXPIRY_SKEW_MS ? token : null;
 }
 
-// Recover a session: try the refresh token, then fall back to Telegram initData.
+// Recover a session: try the refresh-token cookie, then fall back to Telegram initData.
 // Returns a fresh access token, or null if the session cannot be recovered.
 async function recover(): Promise<string | null> {
-  const { refreshToken, setTokens, clearAuth } = useAuthStore.getState();
+  const { hasSession, setTokens, clearAuth } = useAuthStore.getState();
 
-  if (refreshToken) {
+  if (hasSession) {
     try {
-      const { data } = await bare.post<Tokens>("/auth/refresh", { refreshToken });
-      setTokens(data.accessToken, data.refreshToken);
+      const { data } = await bare.post<Tokens>("/auth/refresh");
+      setTokens(data.accessToken);
       return data.accessToken;
     } catch {
       // fall through to Telegram re-login
@@ -44,7 +44,7 @@ async function recover(): Promise<string | null> {
   if (initData) {
     try {
       const { data } = await bare.post<Tokens>("/auth/telegram", { initData });
-      setTokens(data.accessToken, data.refreshToken);
+      setTokens(data.accessToken);
       return data.accessToken;
     } catch {
       // fall through

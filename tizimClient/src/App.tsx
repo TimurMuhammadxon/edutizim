@@ -50,7 +50,7 @@ function SessionRevalidator() {
     const revalidate = async () => {
       if (running) return;
       if (document.visibilityState !== "visible") return;
-      if (!useAuthStore.getState().refreshToken && !window.Telegram?.WebApp?.initData) return;
+      if (!useAuthStore.getState().hasSession && !window.Telegram?.WebApp?.initData) return;
       running = true;
       try {
         const token = await ensureValidSession();
@@ -111,7 +111,7 @@ function TelegramAutoLogin({ children }: { children: ReactNode }) {
 
     authApi
       .telegramLogin(initData)
-      .then((res) => setTokens(res.accessToken, res.refreshToken))
+      .then((res) => setTokens(res.accessToken))
       .catch(() => {})
       .finally(finish);
   }, [isAuthenticated, setTokens]);

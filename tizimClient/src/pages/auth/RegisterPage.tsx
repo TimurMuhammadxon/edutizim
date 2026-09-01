@@ -42,7 +42,7 @@ export function RegisterPage() {
     try {
       await authApi.register(data.email, data.password, data.organizationName);
       const res = await authApi.login(data.email, data.password);
-      setTokens(res.accessToken, res.refreshToken);
+      setTokens(res.accessToken);
       navigate("/home");
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { title?: string } } })?.response?.data?.title;

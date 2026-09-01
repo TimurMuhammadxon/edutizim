@@ -1,9 +1,12 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OnlineTesting.Application.Auth.Commands.Login;
+using Microsoft.Extensions.Options;
+using OnlineTesting.API.Controllers;
+using OnlineTesting.API.Services;
 using OnlineTesting.Application.Users.Commands.SetCredentials;
 using OnlineTesting.Application.Users.Commands.UpdateProfile;
+using OnlineTesting.Infrastructure.Authentication;
 
 namespace OnlineTesting.API.Controllers.Public;
 
@@ -14,10 +17,12 @@ namespace OnlineTesting.API.Controllers.Public;
 public class ProfileController : ControllerBase
 {
     private readonly ISender _mediator;
+    private readonly JwtOptions _jwtOptions;
 
-    public ProfileController(ISender mediator)
+    public ProfileController(ISender mediator, IOptions<JwtOptions> jwtOptions)
     {
         _mediator = mediator;
+        _jwtOptions = jwtOptions.Value;
     }
 
     [HttpPatch]
@@ -30,13 +35,14 @@ public class ProfileController : ControllerBase
     }
 
     [HttpPost("credentials")]
-    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthController.AccessTokenResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<AuthResponse>> SetCredentials(
+    public async Task<ActionResult<AuthController.AccessTokenResponse>> SetCredentials(
         [FromBody] SetCredentialsCommand command, CancellationToken ct)
     {
         var result = await _mediator.Send(command, ct);
-        return Ok(result);
+        RefreshTokenCookie.Set(Response, Request, result.RefreshToken, _jwtOptions);
+        return Ok(new AuthController.AccessTokenResponse(result.AccessToken, result.ExpiresIn));
     }
 }

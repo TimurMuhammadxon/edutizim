@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { profileApi } from "@/api/profile";
+import { authApi } from "@/api/auth";
 import { useAuthStore } from "@/store/auth";
 import { useTranslation } from "@/lib/i18n";
-import axios from "axios";
 
 export function CompleteProfileModal({ onClose }: { onClose: () => void }) {
   const t = useTranslation();
-  const { refreshToken, setTokens } = useAuthStore();
+  const { setTokens } = useAuthStore();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -18,13 +18,8 @@ export function CompleteProfileModal({ onClose }: { onClose: () => void }) {
     setError(null);
     try {
       await profileApi.update(firstName.trim(), lastName.trim() || null);
-      if (refreshToken) {
-        const { data } = await axios.post<{ accessToken: string; refreshToken: string }>(
-          "/api/auth/refresh",
-          { refreshToken }
-        );
-        setTokens(data.accessToken, data.refreshToken);
-      }
+      const data = await authApi.refresh();
+      setTokens(data.accessToken);
       onClose();
     } catch {
       setError(t.saveError);

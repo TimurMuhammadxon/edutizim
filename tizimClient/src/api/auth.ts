@@ -1,22 +1,20 @@
 import { api } from "./axios";
-import { type AuthResponse, type RegisterResponse } from "@/types";
+import { type AccessTokenResponse, type RegisterResponse } from "@/types";
 
 export const authApi = {
   login: (identifier: string, password: string) =>
-    api.post<AuthResponse>("/auth/login", { identifier, password }).then((r) => r.data),
+    api.post<AccessTokenResponse>("/auth/login", { identifier, password }).then((r) => r.data),
 
   register: (email: string, password: string, organizationName: string) =>
     api.post<RegisterResponse>("/auth/register", { email, password, organizationName }).then((r) => r.data),
 
-  logout: (refreshToken: string) =>
-    api.post("/auth/logout", { refreshToken }),
+  logout: () => api.post("/auth/logout"),
 
-  refresh: (refreshToken: string) =>
-    api.post<AuthResponse>("/auth/refresh", { refreshToken }).then((r) => r.data),
+  refresh: () => api.post<AccessTokenResponse>("/auth/refresh").then((r) => r.data),
 
   telegramLogin: (initData: string) =>
-    api.post<AuthResponse>("/auth/telegram", { initData }).then((r) => r.data),
+    api.post<AccessTokenResponse>("/auth/telegram", { initData }).then((r) => r.data),
 
   googleLogin: (idToken: string) =>
-    api.post<AuthResponse>("/auth/google", { idToken }).then((r) => r.data),
+    api.post<AccessTokenResponse>("/auth/google", { idToken }).then((r) => r.data),
 };

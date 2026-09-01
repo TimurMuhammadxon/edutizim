@@ -11,12 +11,13 @@ interface Props {
 export function ProtectedRoute({ children, roles }: Props) {
   const { isAuthenticated, hasRole } = useAuthStore();
 
-  // A session is recoverable if the access token is still valid, or we hold a
-  // refresh token / Telegram initData to silently mint a new one.
+  // A session is recoverable if the access token is still valid, or we believe a
+  // refresh-token cookie was issued (the cookie itself is httpOnly, invisible to JS —
+  // `hasSession` just remembers that one was set), or we have Telegram initData.
   const authed = isAuthenticated();
   const canRecover =
     authed ||
-    !!useAuthStore.getState().refreshToken ||
+    useAuthStore.getState().hasSession ||
     !!window.Telegram?.WebApp?.initData;
 
   // Expired access token but recoverable → refresh now instead of bouncing to /login.

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getApiErrorMessage } from "@/lib/errors";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth";
 import { useBranchStore } from "@/store/branch";
 import { branchesApi } from "@/api/branches";
@@ -74,17 +74,19 @@ const LANG_OPTIONS: { code: LangCode; label: string }[] = [
 ];
 
 export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) {
-  const { user, clearAuth, refreshToken } = useAuthStore();
+  const { user, clearAuth } = useAuthStore();
   const navigate = useNavigate();
   const { navItems, crmItems, adminItems } = useNavItems();
   const t = useTranslation();
   const { lang, setLang } = useLanguageStore();
+  const queryClient = useQueryClient();
 
   const handleLogout = async () => {
     try {
-      if (refreshToken) await authApi.logout(refreshToken);
+      await authApi.logout();
     } finally {
       clearAuth();
+      queryClient.clear();
       navigate("/login");
     }
   };
@@ -341,7 +343,6 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
 function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () => void }) {
   const t = useTranslation();
   const setTokens = useAuthStore((s) => s.setTokens);
-  const refreshToken = useAuthStore((s) => s.refreshToken);
   const [tab, setTab] = useState<"profile" | "credentials">("profile");
 
   // Profile tab
@@ -369,12 +370,8 @@ function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () =
     setSaving(true); setError(null); setSuccess(null);
     try {
       await profileApi.update(firstName || null, lastName || null);
-      if (refreshToken) {
-        const { data } = await import("axios").then(({ default: ax }) =>
-          ax.post<{ accessToken: string; refreshToken: string }>("/api/auth/refresh", { refreshToken })
-        );
-        setTokens(data.accessToken, data.refreshToken);
-      }
+      const data = await authApi.refresh();
+      setTokens(data.accessToken);
       setSuccess(t.saved);
     } catch {
       setError(t.saveError);
@@ -389,7 +386,7 @@ function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () =
     setSaving(true); setError(null); setSuccess(null);
     try {
       const res = await profileApi.setCredentials(isTelegramUser ? email : (user!.email ?? ""), password);
-      setTokens(res.accessToken, res.refreshToken);
+      setTokens(res.accessToken);
       setSuccess(t.credentialsSaved);
       setPassword(""); setConfirmPassword("");
     } catch (e: unknown) {

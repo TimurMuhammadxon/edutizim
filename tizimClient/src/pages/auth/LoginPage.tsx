@@ -35,7 +35,7 @@ export function LoginPage() {
     setError(null);
     try {
       const res = await authApi.login(data.identifier, data.password);
-      setTokens(res.accessToken, res.refreshToken);
+      setTokens(res.accessToken);
       navigate("/home");
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { title?: string } } })?.response?.data?.title;
@@ -169,7 +169,7 @@ export function LoginPage() {
               setError(null);
               try {
                 const res = await authApi.googleLogin(credentialResponse.credential);
-                setTokens(res.accessToken, res.refreshToken);
+                setTokens(res.accessToken);
                 navigate("/home");
               } catch {
                 setError(t.googleError);
