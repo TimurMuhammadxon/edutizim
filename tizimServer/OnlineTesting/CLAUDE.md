@@ -9,11 +9,12 @@ project and have not been rebranded. Backend build order: CRM first, then ERP, t
 - Clean Architecture: Domain / Application / Infrastructure / API
 - MediatR (CQRS), FluentValidation via IPipelineBehavior
 - EF Core + PostgreSQL (snake_case via EFCore.NamingConventions)
-- BCrypt, JWT + refresh token rotation, Google OAuth login, Telegram WebApp login (HMAC)
+- BCrypt, JWT (access token only, in the response body) + refresh token rotation
+  (httpOnly cookie, never sent to JS), Google OAuth login, Telegram WebApp login (HMAC)
 - MinIO (S3-compatible) via AWSSDK.S3 for file storage
-- xUnit + EF Core InMemory for backend tests (`OnlineTesting.Tests`)
+- xUnit + EF Core InMemory for backend tests (`OnlineTesting.Tests`); Vitest (frontend, `pool: "threads"`)
 - docker-compose (dev only): PostgreSQL on port 15432, MinIO on ports 9000/9001
-- GitHub Actions CI: `.github/workflows/backend-ci.yml` (build + test), path-scoped to `tizimServer/**`
+- GitHub Actions CI: `.github/workflows/backend-ci.yml` + `frontend-ci.yml`, both path-scoped, both blocking (build+test+lint)
 
 ## Solution layout
 ```
@@ -84,14 +85,18 @@ by self-registration). Authorization policies (`Domain/Authorization/Roles.cs` +
 - JWT: `MapInboundClaims = false`, `NameClaimType = "sub"`, `RoleClaimType = ClaimTypes.Role`,
   `Jwt:Key` required ≥32 chars from config/env (never hardcoded, not in any appsettings file)
 - `JwtBearerEvents.OnAuthenticationFailed → NoResult()` (anonymous fallback for `[AllowAnonymous]`)
+- Refresh token: `RefreshTokenCookie` helper (`API/Services/`) sets/clears an httpOnly,
+  `SameSite=Lax` cookie scoped to `/auth`; `Secure` mirrors `Request.IsHttps` so it works over
+  plain HTTP in dev without separate config. `AuthController`'s login/refresh/telegram/google
+  and `ProfileController.SetCredentials` all use it — API responses carry only
+  `{ accessToken, expiresIn }`, never the raw refresh token.
+- `AddAuthorization` sets a global `FallbackPolicy` requiring authentication — any action
+  without an explicit `[Authorize]`/`[AllowAnonymous]` defaults to protected. This means every
+  public endpoint (register/login/refresh/telegram/google) *must* carry `[AllowAnonymous]`
+  explicitly; don't add a new public endpoint without it.
 - `LanguageMiddleware` after Auth; reads `?lang=` (priority) or `Accept-Language`
 - Rate limiting on auth endpoints (`auth-strict` for login/register, `auth-normal` for refresh/telegram/google)
 - Swagger with Bearer security scheme (dev only)
-- **Gap:** no global `AddAuthorization(options => options.FallbackPolicy = ...)` and some
-  controllers (`GroupsController`, `BranchesController`, `RoomsController`, `MembersController`)
-  have no class-level `[Authorize]`, relying entirely on correct per-action attributes — a new
-  action added without one becomes silently anonymous. Add the attribute explicitly on every
-  new action; don't rely on it being covered by a neighbor.
 
 **Security**
 - Constant-time defence on login (`CryptographicOperations.FixedTimeEquals` / dummy-hash BCrypt compare)
@@ -102,10 +107,13 @@ by self-registration). Authorization policies (`Domain/Authorization/Roles.cs` +
 
 ## Languages
 Three: `uz-latn` (default), `ru`, `uz-cyrl`. Backend constants in
-`Application/Common/Constants/Languages.cs`. Note: most CRM pages on the frontend
-(Leads/Students/Groups/Finance/Rooms/Branches/Tasks) are hardcoded Uzbek strings, not wired
-to the i18n system — only the older auth/subscription-era pages use it. Follow that pattern
-(or fix it) deliberately, not by accident, when touching those pages.
+`Application/Common/Constants/Languages.cs`. Frontend: every CRM/admin page goes through
+`useTranslation()` (`tizimClient/src/lib/i18n.ts`) — keep new pages on this pattern, adding
+the same key to all three locale blocks. One known gap: the enum-label lookup tables in
+`tizimClient/src/lib/groupHelpers.ts` (membership status, days of week, payment methods,
+month names) are plain Uzbek-only constants, not wired to `t` — they're shared across
+multiple files and aren't React components, so converting them needs a different shape
+(functions taking `t`) than the page-level conversion.
 
 ## Modules (current, 2026-09-01)
 
@@ -123,8 +131,9 @@ Entities: `User`, `RefreshToken`, `ExternalLogin`.
 - **Attendance** (`Domain/Crm/Attendance.cs`, nested under Groups/Students endpoints).
 - **Finance** (`FinanceController`, `/crm/finance`) — `Payment` (tuition payments, distinct
   from the old individual-subscription billing model, which was deleted — see below),
-  debtor reports (`/debtors`, `/period-debts`, currently unpaginated — fine at current scale,
-  will need pagination as an org's student count grows).
+  debtor reports (`/debtors`, `/period-debts`, `PagedResult<T>`-paginated — the balance
+  computation itself still runs over every non-Trial membership in-memory before paging,
+  so pagination bounds the response size, not the DB fetch cost).
 - **Tasks** (`TasksController`, `/crm/tasks`) — CRM follow-up reminders (`CrmTask`),
   complete/cancel/reschedule.
 - **Dashboard** (`DashboardController`, `/crm/dashboard`) — summary stats.
@@ -149,15 +158,26 @@ which was a real privilege-escalation bug. There is currently **no SaaS billing 
 organizations — that's a deliberate gap pending a real design, not an oversight. If billing
 is needed again, design it against `Organization`, not against an individual `User`.
 
+## Frontend conventions (tizimClient)
+List/CRUD pages (Leads, Students, Groups, Rooms, Branches, Staff) build on 3 shared
+components in `src/components/shared/`: `CrudPageHeader`/`CrudSearchBar` (title+count+add
+button, search bar), `CrudTable` (generic column-render-prop table with empty state and an
+optional `onRowClick`), `CrudFormDialog` (dialog shell with cancel/save footer). Form fields
+inside the dialog stay page-specific — only the structural scaffolding is shared. Use these
+for any new CRUD page instead of hand-rolling the table/dialog again.
+
 ## Testing
 `OnlineTesting.Tests` (xUnit) uses EF Core's InMemory provider to build a real
 `ApplicationDbContext` (same `OnModelCreating`, same tenant query filter) rather than mocking
 `IApplicationDbContext` — this is deliberate: the tenant filter is exactly the kind of logic
 that's easy to accidentally bypass with a mock. `Common/TestDbContextFactory.cs` +
 `Common/FakeCurrentUser.cs` are the seams for standing up an org-scoped context per test.
-Current coverage: `GroupStudentTenantIsolationTests` (regression coverage for the IDOR fix
-above). Coverage is intentionally narrow so far — extend it when touching risky logic
-(financial calculations, auth, tenant boundaries), not as a blanket goal.
+Current coverage: `GroupStudentTenantIsolationTests` (the IDOR fix above), `AssignLeadManagerTests`
+(cross-org manager assignment), `BalanceCalculatorTests` (calendar-month billing rules).
+Coverage is intentionally narrow so far — extend it when touching risky logic (financial
+calculations, auth, tenant boundaries), not as a blanket goal. Frontend: Vitest, same
+philosophy — `session.ts`'s single-flight refresh + Telegram fallback, `useAuthStore`,
+`decodeJwt`/`getApiErrorMessage`. No component/E2E tests yet.
 
 ## Deployment
 No production deployment exists yet for tizim itself — only local dev infra
