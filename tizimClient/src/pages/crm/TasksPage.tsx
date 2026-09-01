@@ -10,9 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
+import { CrudFormDialog } from "@/components/shared/CrudFormDialog";
 import { toast } from "@/components/ui/use-toast";
+import { getApiErrorMessage } from "@/lib/errors";
+import { useTranslation } from "@/lib/i18n";
 import { Plus, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +22,7 @@ type FormState = { title: string; description: string; dueAt: string; leadId: st
 const emptyForm: FormState = { title: "", description: "", dueAt: "", leadId: "" };
 
 export function TasksPage() {
+  const t = useTranslation();
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -35,6 +38,9 @@ export function TasksPage() {
     queryFn: () => leadsApi.list({ pageSize: 100 }),
   });
 
+  const onError = (e: unknown) =>
+    toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" });
+
   const createMutation = useMutation({
     mutationFn: () =>
       tasksApi.create({
@@ -48,18 +54,21 @@ export function TasksPage() {
       qc.invalidateQueries({ queryKey: ["crm-tasks"] });
       setDialogOpen(false);
       setForm(emptyForm);
-      toast({ title: "Vazifa qo'shildi" });
+      toast({ title: t.taskAdded });
     },
+    onError,
   });
 
   const completeMutation = useMutation({
     mutationFn: (id: string) => tasksApi.complete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["crm-tasks"] }),
+    onError,
   });
 
   const cancelMutation = useMutation({
     mutationFn: (id: string) => tasksApi.cancel(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["crm-tasks"] }),
+    onError,
   });
 
   // Date.now() must run in an effect, not during render (React purity rule) — until
@@ -75,12 +84,12 @@ export function TasksPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Vazifalar</h1>
-          <p className="text-muted-foreground mt-1">Lidlar bilan ishlash rejasi</p>
+          <h1 className="text-2xl font-bold">{t.tasksTitle}</h1>
+          <p className="text-muted-foreground mt-1">{t.tasksSubtitle}</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Vazifa qo'shish
+          {t.addTask}
         </Button>
       </div>
 
@@ -93,7 +102,7 @@ export function TasksPage() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-medium">{task.title}</p>
-                    {overdue && <Badge variant="destructive" className="text-xs">Kechikkan</Badge>}
+                    {overdue && <Badge variant="destructive" className="text-xs">{t.overdueBadge}</Badge>}
                   </div>
                   {task.leadFullName && (
                     <p className="text-sm text-muted-foreground mt-0.5">{task.leadFullName}</p>
@@ -106,10 +115,10 @@ export function TasksPage() {
                   </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  <Button variant="outline" size="icon" onClick={() => completeMutation.mutate(task.id)} title="Bajarildi">
+                  <Button variant="outline" size="icon" onClick={() => completeMutation.mutate(task.id)} title={t.doneAction}>
                     <Check className="h-4 w-4 text-emerald-500" />
                   </Button>
-                  <Button variant="outline" size="icon" onClick={() => cancelMutation.mutate(task.id)} title="Bekor qilish">
+                  <Button variant="outline" size="icon" onClick={() => cancelMutation.mutate(task.id)} title={t.cancel}>
                     <X className="h-4 w-4 text-red-500" />
                   </Button>
                 </div>
@@ -120,53 +129,44 @@ export function TasksPage() {
         {data?.items.length === 0 && (
           <Card>
             <CardContent className="text-center text-muted-foreground py-10">
-              Faol vazifalar yo'q
+              {t.noActiveTasks}
             </CardContent>
           </Card>
         )}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Yangi vazifa</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label>Sarlavha</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Muddati</Label>
-              <Input type="datetime-local" value={form.dueAt} onChange={(e) => setForm({ ...form, dueAt: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Lid (ixtiyoriy)</Label>
-              <Select value={form.leadId} onValueChange={(v) => setForm({ ...form, leadId: v })}>
-                <SelectTrigger><SelectValue placeholder="Lid tanlang" /></SelectTrigger>
-                <SelectContent>
-                  {leads?.items.map((l) => (
-                    <SelectItem key={l.id} value={l.id}>{l.fullName} — {l.phone}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Izoh</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Bekor</Button>
-            <Button
-              onClick={() => createMutation.mutate()}
-              disabled={!form.title.trim() || !form.dueAt || createMutation.isPending}
-            >
-              Saqlash
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CrudFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        title={t.newTask}
+        onSave={() => createMutation.mutate()}
+        saveDisabled={!form.title.trim() || !form.dueAt || createMutation.isPending}
+        saving={createMutation.isPending}
+      >
+        <div className="space-y-1.5">
+          <Label>{t.title}</Label>
+          <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t.dueDateLabel}</Label>
+          <Input type="datetime-local" value={form.dueAt} onChange={(e) => setForm({ ...form, dueAt: e.target.value })} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t.optionalLeadLabel}</Label>
+          <Select value={form.leadId} onValueChange={(v) => setForm({ ...form, leadId: v })}>
+            <SelectTrigger><SelectValue placeholder={t.selectLead} /></SelectTrigger>
+            <SelectContent>
+              {leads?.items.map((l) => (
+                <SelectItem key={l.id} value={l.id}>{l.fullName} — {l.phone}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t.crmNotes}</Label>
+          <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        </div>
+      </CrudFormDialog>
     </div>
   );
 }

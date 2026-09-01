@@ -23,6 +23,7 @@ import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { AttendanceDialog } from "@/components/shared/AttendanceDialog";
 import { RecordPaymentDialog, DiscountDialog } from "@/components/shared/GroupStudentActionDialogs";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslation } from "@/lib/i18n";
 import {
   ArrowLeft, Plus, Trash2, Wallet, Snowflake, Percent, MoreVertical, Users,
 } from "lucide-react";
@@ -42,6 +43,7 @@ function InfoRow({ label, children }: { label: string; children: React.ReactNode
 }
 
 export function GroupProfilePage() {
+  const t = useTranslation();
   const { id: groupId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -81,30 +83,31 @@ export function GroupProfilePage() {
 
   const assignTeacherMutation = useMutation({
     mutationFn: (teacherId: string | null) => groupsApi.assignTeacher(groupId!, teacherId),
-    onSuccess: () => { invalidate(); toast({ title: "O'qituvchi tayinlandi" }); },
+    onSuccess: () => { invalidate(); toast({ title: t.teacherAssigned }); },
   });
 
   const assignRoomMutation = useMutation({
     mutationFn: (roomId: string | null) => groupsApi.assignRoom(groupId!, roomId),
-    onSuccess: () => { invalidate(); toast({ title: "Xona tayinlandi" }); },
+    onSuccess: () => { invalidate(); toast({ title: t.roomAssigned }); },
     onError: (e: unknown) => {
       const msg = getApiErrorMessage(e);
-      toast({ title: "Xatolik", description: msg ?? "Xonani tayinlab bo'lmadi", variant: "destructive" });
+      toast({ title: t.error, description: msg ?? t.roomAssignFailed, variant: "destructive" });
     },
   });
 
   const addStudentMutation = useMutation({
     mutationFn: (studentId: string) => groupsApi.addStudent(groupId!, studentId),
-    onSuccess: () => { invalidate(); setAddStudentId(""); toast({ title: "Talaba qo'shildi" }); },
+    onSuccess: () => { invalidate(); setAddStudentId(""); toast({ title: t.studentAdded }); },
     onError: (e: unknown) => {
       const msg = getApiErrorMessage(e);
-      toast({ title: "Xatolik", description: msg ?? "Talaba qo'shib bo'lmadi", variant: "destructive" });
+      toast({ title: t.error, description: msg ?? t.studentAddFailed, variant: "destructive" });
     },
   });
 
   const removeStudentMutation = useMutation({
     mutationFn: (studentId: string) => groupsApi.removeStudent(groupId!, studentId),
     onSuccess: invalidate,
+    onError: (e: unknown) => toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" }),
   });
 
   const saveScheduleMutation = useMutation({
@@ -114,18 +117,18 @@ export function GroupProfilePage() {
         startTime: withSeconds(s.startTime),
         endTime: withSeconds(s.endTime),
       }))),
-    onSuccess: () => { invalidate(); setScheduleDraft(null); toast({ title: "Dars jadvali saqlandi" }); },
+    onSuccess: () => { invalidate(); setScheduleDraft(null); toast({ title: t.scheduleSaved }); },
     onError: () => {
-      toast({ title: "Xatolik", description: "Dars jadvalini saqlab bo'lmadi", variant: "destructive" });
+      toast({ title: t.error, description: t.scheduleSaveFailed, variant: "destructive" });
     },
   });
 
   const recordPaymentMutation = useMutation({
     mutationFn: (data: { studentId: string; amount: number; paidAt: string; forMonth: string; method: import("@/types").PaymentMethod }) =>
       financeApi.recordPayment({ groupId: groupId!, ...data }),
-    onSuccess: () => { invalidate(); setPaymentStudent(null); toast({ title: "To'lov qabul qilindi" }); },
+    onSuccess: () => { invalidate(); setPaymentStudent(null); toast({ title: t.paymentAccepted }); },
     onError: () => {
-      toast({ title: "Xatolik", description: "To'lovni saqlab bo'lmadi", variant: "destructive" });
+      toast({ title: t.error, description: t.paymentSaveFailed, variant: "destructive" });
     },
   });
 
@@ -133,17 +136,20 @@ export function GroupProfilePage() {
     mutationFn: ({ studentId, status }: { studentId: string; status: GroupMembershipStatus }) =>
       groupsApi.setMembershipStatus(groupId!, studentId, status),
     onSuccess: invalidate,
+    onError: (e: unknown) => toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" }),
   });
 
   const setDiscountMutation = useMutation({
     mutationFn: (data: { studentId: string; price: number; startDate: string; endDate: string }) =>
       groupsApi.setDiscount(groupId!, data.studentId, data),
-    onSuccess: () => { invalidate(); setDiscountStudent(null); toast({ title: "Chegirma saqlandi" }); },
+    onSuccess: () => { invalidate(); setDiscountStudent(null); toast({ title: t.discountSaved }); },
+    onError: (e: unknown) => toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" }),
   });
 
   const removeDiscountMutation = useMutation({
     mutationFn: (studentId: string) => groupsApi.removeDiscount(groupId!, studentId),
-    onSuccess: () => { invalidate(); setDiscountStudent(null); toast({ title: "Chegirma olib tashlandi" }); },
+    onSuccess: () => { invalidate(); setDiscountStudent(null); toast({ title: t.discountRemoved }); },
+    onError: (e: unknown) => toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" }),
   });
 
   if (isLoading || !group) return <PageLoader />;
@@ -164,7 +170,7 @@ export function GroupProfilePage() {
     <div className="max-w-6xl mx-auto space-y-4">
       <Button variant="ghost" size="sm" onClick={() => navigate("/crm/groups")} className="-ml-2">
         <ArrowLeft className="h-4 w-4 mr-1.5" />
-        Guruhlar
+        {t.groups}
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4 items-start">
@@ -176,7 +182,7 @@ export function GroupProfilePage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-lg font-bold leading-tight">{group.name}</h1>
                   <Badge variant={group.isActive ? "success" : "secondary"} className="text-xs">
-                    {group.isActive ? "Faol" : "Nofaol"}
+                    {group.isActive ? t.active : t.inactive}
                   </Badge>
                 </div>
                 {group.description && (
@@ -187,49 +193,49 @@ export function GroupProfilePage() {
               <Separator />
 
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Narx</span>
+                <span className="text-muted-foreground">{t.price}</span>
                 <span className="font-semibold">{group.price.toLocaleString()} so'm</span>
               </div>
 
-              <InfoRow label="O'qituvchi">
+              <InfoRow label={t.teacher}>
                 <Select
                   value={group.teacherId ?? "none"}
                   onValueChange={(v) => assignTeacherMutation.mutate(v === "none" ? null : v)}
                 >
                   <SelectTrigger className="h-9">
-                    <SelectValue placeholder="O'qituvchi tanlang" />
+                    <SelectValue placeholder={t.selectTeacher} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Tayinlanmagan</SelectItem>
-                    {teachers?.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>
-                        {t.fullName || t.phone || t.id}
+                    <SelectItem value="none">{t.notAssigned}</SelectItem>
+                    {teachers?.map((teacher) => (
+                      <SelectItem key={teacher.id} value={teacher.id}>
+                        {teacher.fullName || teacher.phone || teacher.id}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </InfoRow>
 
-              <InfoRow label="Xona">
+              <InfoRow label={t.room}>
                 <Select
                   value={group.roomId ?? "none"}
                   onValueChange={(v) => assignRoomMutation.mutate(v === "none" ? null : v)}
                 >
                   <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Xona tanlang" />
+                    <SelectValue placeholder={t.selectRoom} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Tayinlanmagan</SelectItem>
+                    <SelectItem value="none">{t.notAssigned}</SelectItem>
                     {rooms?.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
-                        {r.name} ({r.capacity} kishi)
+                        {r.name} ({r.capacity} {t.capacityPeople})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {group.roomId && group.roomCapacity != null && (
                   <p className="text-xs text-muted-foreground">
-                    {group.students.length} / {group.roomCapacity} o'rin band
+                    {group.students.length} / {group.roomCapacity} {t.seatsOccupied}
                   </p>
                 )}
               </InfoRow>
@@ -241,15 +247,15 @@ export function GroupProfilePage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  Talabalar
+                  {t.studentsTitle}
                 </span>
-                <Badge variant="outline" className="text-xs">{group.students.length} ta</Badge>
+                <Badge variant="outline" className="text-xs">{group.students.length}</Badge>
               </div>
 
               <div className="flex gap-2">
                 <Select value={addStudentId} onValueChange={setAddStudentId}>
                   <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Qo'shish..." />
+                    <SelectValue placeholder={t.addStudentPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
                     {availableStudents.map((s) => (
@@ -272,7 +278,7 @@ export function GroupProfilePage() {
 
               <div className="space-y-0.5 max-h-[420px] overflow-y-auto -mx-1.5 px-1.5">
                 {group.students.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-8">Talabalar yo'q</p>
+                  <p className="text-sm text-muted-foreground text-center py-8">{t.noStudentsInGroup}</p>
                 )}
                 {group.students.map((s, i) => (
                   <div
@@ -282,7 +288,7 @@ export function GroupProfilePage() {
                     <span className="text-xs text-muted-foreground w-4 text-right flex-shrink-0">{i + 1}.</span>
                     <span
                       className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${s.balance < 0 ? "bg-destructive" : "bg-emerald-500"}`}
-                      title={s.isDebtor ? "Qarzdor" : MEMBERSHIP_STATUS_LABELS[s.status]}
+                      title={s.isDebtor ? t.debtorBadge : MEMBERSHIP_STATUS_LABELS[s.status]}
                     />
                     <button
                       className="text-sm font-medium hover:underline truncate flex-1 text-left min-w-0"
@@ -308,7 +314,7 @@ export function GroupProfilePage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setPaymentStudent(s)}>
                           <Wallet className="h-4 w-4 mr-2" />
-                          To'lov qabul qilish
+                          {t.recordPaymentAction}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           disabled={s.status === "Trial" || s.status === "Left"}
@@ -318,11 +324,11 @@ export function GroupProfilePage() {
                           })}
                         >
                           <Snowflake className="h-4 w-4 mr-2" />
-                          {s.status === "Frozen" ? "Faollashtirish" : "Muzlatish"}
+                          {s.status === "Frozen" ? t.activateAction : t.freezeAction}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setDiscountStudent(s)}>
                           <Percent className="h-4 w-4 mr-2" />
-                          Chegirma
+                          {t.discountAction}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -330,7 +336,7 @@ export function GroupProfilePage() {
                           onClick={() => removeStudentMutation.mutate(s.studentId)}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Guruhdan chiqarish
+                          {t.removeFromGroupAction}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -346,8 +352,8 @@ export function GroupProfilePage() {
           <CardContent className="p-5">
             <Tabs defaultValue="attendance">
               <TabsList>
-                <TabsTrigger value="attendance">Davomat</TabsTrigger>
-                <TabsTrigger value="schedule">Dars jadvali</TabsTrigger>
+                <TabsTrigger value="attendance">{t.attendanceAction}</TabsTrigger>
+                <TabsTrigger value="schedule">{t.scheduleTabLabel}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="attendance" className="mt-4">
@@ -361,13 +367,13 @@ export function GroupProfilePage() {
                     value={presetTime}
                     onChange={(e) => setPresetTime(e.target.value)}
                     className="w-28"
-                    title="Vaqt"
+                    title={t.timeLabel}
                   />
                   <Button variant="outline" size="sm" onClick={() => applyPreset(ODD_DAYS)}>
-                    Toq kunlar (Dush, Chor, Juma)
+                    {t.oddDaysLabel}
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => applyPreset(EVEN_DAYS)}>
-                    Juft kunlar (Sesh, Pay, Shan)
+                    {t.evenDaysLabel}
                   </Button>
                 </div>
 
@@ -421,7 +427,7 @@ export function GroupProfilePage() {
                     </div>
                   ))}
                   {schedule.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-6">Dars jadvali belgilanmagan</p>
+                    <p className="text-sm text-muted-foreground text-center py-6">{t.noScheduleSet}</p>
                   )}
                   <Button
                     variant="outline"
@@ -433,18 +439,18 @@ export function GroupProfilePage() {
                     }}
                   >
                     <Plus className="h-4 w-4 mr-1" />
-                    Kun qo'shish
+                    {t.addDayAction}
                   </Button>
                 </div>
                 {scheduleDraft && (
                   <div className="flex gap-2 justify-end pt-3 border-t">
-                    <Button variant="outline" size="sm" onClick={() => setScheduleDraft(null)}>Bekor</Button>
+                    <Button variant="outline" size="sm" onClick={() => setScheduleDraft(null)}>{t.cancel}</Button>
                     <Button
                       size="sm"
                       disabled={saveScheduleMutation.isPending}
                       onClick={() => saveScheduleMutation.mutate(scheduleDraft)}
                     >
-                      Jadvalni saqlash
+                      {t.saveScheduleAction}
                     </Button>
                   </div>
                 )}

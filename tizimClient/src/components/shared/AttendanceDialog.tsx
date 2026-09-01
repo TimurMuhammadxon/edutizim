@@ -4,6 +4,7 @@ import { attendanceApi } from "@/api/attendance";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
+import { useTranslation } from "@/lib/i18n";
 import { ChevronLeft, ChevronRight, Check, X, CheckCheck } from "lucide-react";
 import type { AttendanceStatus } from "@/types";
 
@@ -33,6 +34,7 @@ function nextBulkStatus(column: (AttendanceStatus | undefined)[]): AttendanceSta
 }
 
 export function AttendanceDialog({ groupId, groupName, onClose, inline }: Props) {
+  const t = useTranslation();
   const qc = useQueryClient();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -82,7 +84,7 @@ export function AttendanceDialog({ groupId, groupName, onClose, inline }: Props)
         <PageLoader />
       ) : data.lessonDates.length === 0 ? (
         <p className="text-center text-muted-foreground py-10">
-          Guruh uchun dars jadvali belgilanmagan
+          {t.noScheduleForGroup}
         </p>
       ) : (
         <div className="overflow-x-auto">
@@ -90,7 +92,7 @@ export function AttendanceDialog({ groupId, groupName, onClose, inline }: Props)
             <thead>
               <tr>
                 <th className="sticky left-0 bg-background text-left px-2 py-1.5 border-b font-medium min-w-[160px]">
-                  Talaba
+                  {t.studentColumn}
                 </th>
                 {data.lessonDates.map((d) => {
                   const isFuture = d > today;
@@ -102,7 +104,7 @@ export function AttendanceDialog({ groupId, groupName, onClose, inline }: Props)
                         <span>{d.slice(8, 10)}</span>
                         <button
                           disabled={disabled}
-                          title="Barchasini belgilash"
+                          title={t.markAllAction}
                           onClick={() => setForDateMutation.mutate({ lessonDate: d, status: target })}
                           className={`h-5 w-5 rounded flex items-center justify-center ${
                             disabled ? "opacity-30 cursor-not-allowed" : "hover:bg-muted cursor-pointer text-muted-foreground"
@@ -151,7 +153,7 @@ export function AttendanceDialog({ groupId, groupName, onClose, inline }: Props)
               {data.students.length === 0 && (
                 <tr>
                   <td colSpan={data.lessonDates.length + 1} className="text-center text-muted-foreground py-6">
-                    Talabalar yo'q
+                    {t.noStudentsInGroup}
                   </td>
                 </tr>
               )}
@@ -170,13 +172,13 @@ export function AttendanceDialog({ groupId, groupName, onClose, inline }: Props)
     <Dialog open onOpenChange={(o) => !o && onClose?.()}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>{groupName} — Davomat</DialogTitle>
+          <DialogTitle>{groupName} — {t.attendanceAction}</DialogTitle>
         </DialogHeader>
 
         {body}
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Yopish</Button>
+          <Button variant="outline" onClick={onClose}>{t.close}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

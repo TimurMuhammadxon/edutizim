@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MonthYearPicker } from "@/components/shared/MonthYearPicker";
 import { PAYMENT_METHOD_LABELS, PAYMENT_METHODS } from "@/lib/groupHelpers";
+import { useTranslation } from "@/lib/i18n";
 import type { GroupStudentDto, PaymentMethod } from "@/types";
 
 function defaultForMonth(nextPaymentDueDate?: string): string {
@@ -23,6 +24,7 @@ export function RecordPaymentDialog({
   onSubmit: (data: { amount: number; paidAt: string; forMonth: string; method: PaymentMethod }) => void;
   onClose: () => void;
 }) {
+  const t = useTranslation();
   const [amount, setAmount] = useState(String(student.effectivePrice));
   const [paidAt, setPaidAt] = useState(new Date().toISOString().slice(0, 10));
   const [forMonth, setForMonth] = useState(defaultForMonth(student.nextPaymentDueDate));
@@ -32,23 +34,23 @@ export function RecordPaymentDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{student.fullName} — to'lov</DialogTitle>
+          <DialogTitle>{student.fullName} — {t.paymentDialogSuffix}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Summa (so'm)</Label>
+            <Label>{t.amountColumn} (so'm)</Label>
             <Input type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label>Qaysi oy uchun</Label>
+            <Label>{t.forMonthColumn}</Label>
             <MonthYearPicker value={forMonth} onChange={setForMonth} />
           </div>
           <div className="space-y-1.5">
-            <Label>Sana</Label>
+            <Label>{t.dateColumn}</Label>
             <Input type="date" value={paidAt} onChange={(e) => setPaidAt(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label>To'lov usuli</Label>
+            <Label>{t.paymentMethodLabel}</Label>
             <Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>
               <SelectTrigger>
                 <SelectValue />
@@ -62,12 +64,12 @@ export function RecordPaymentDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Bekor</Button>
+          <Button variant="outline" onClick={onClose}>{t.cancel}</Button>
           <Button
             disabled={!amount || Number(amount) <= 0 || !forMonth || isPending}
             onClick={() => onSubmit({ amount: Number(amount), paidAt, forMonth: `${forMonth}-01`, method })}
           >
-            Saqlash
+            {t.save}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -88,6 +90,7 @@ export function DiscountDialog({
   onRemove: () => void;
   onClose: () => void;
 }) {
+  const t = useTranslation();
   const today = new Date().toISOString().slice(0, 10);
   const yearEnd = `${new Date().getFullYear()}-12-31`;
   const [price, setPrice] = useState(String(student.discountedPrice ?? student.effectivePrice));
@@ -98,20 +101,20 @@ export function DiscountDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{student.fullName} — chegirma</DialogTitle>
+          <DialogTitle>{student.fullName} — {t.discountDialogSuffix}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Chegirmali narx (so'm)</Label>
+            <Label>{t.discountedPriceLabel}</Label>
             <Input type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Boshlanish sanasi</Label>
+              <Label>{t.fromDateLabel}</Label>
               <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Tugash sanasi</Label>
+              <Label>{t.toDateLabel}</Label>
               <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
           </div>
@@ -119,15 +122,15 @@ export function DiscountDialog({
         <DialogFooter>
           {student.discountedPrice != null && (
             <Button variant="outline" className="mr-auto" disabled={isPending} onClick={onRemove}>
-              Chegirmani olib tashlash
+              {t.removeDiscountAction}
             </Button>
           )}
-          <Button variant="outline" onClick={onClose}>Bekor</Button>
+          <Button variant="outline" onClick={onClose}>{t.cancel}</Button>
           <Button
             disabled={!price || Number(price) < 0 || isPending}
             onClick={() => onSave({ price: Number(price), startDate, endDate })}
           >
-            Saqlash
+            {t.save}
           </Button>
         </DialogFooter>
       </DialogContent>

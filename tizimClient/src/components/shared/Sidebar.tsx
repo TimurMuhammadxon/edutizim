@@ -47,9 +47,9 @@ function useNavItems() {
     { to: "/crm/leads",         icon: Users,                            label: t.leadsTitle, roles: crmRoles },
     { to: "/crm/students",      icon: GraduationCap,                    label: t.studentsTitle, roles: crmRoles },
     { to: "/crm/groups",        icon: "/pravadrive-icon-guruhlar.svg",  label: t.groups, roles: crmRoles },
-    { to: "/crm/finance",       icon: Wallet,                           label: "Moliya", roles: crmRoles },
-    { to: "/crm/tasks",         icon: ListChecks,                       label: "Vazifalar", roles: crmRoles },
-    { to: "/admin/staff",       icon: Contact,                          label: "Xodimlar", roles: crmRoles },
+    { to: "/crm/finance",       icon: Wallet,                           label: t.financeTitle, roles: crmRoles },
+    { to: "/crm/tasks",         icon: ListChecks,                       label: t.tasksTitle, roles: crmRoles },
+    { to: "/admin/staff",       icon: Contact,                          label: t.staffTitle, roles: crmRoles },
     { to: "/teacher/my-groups", icon: "/pravadrive-icon-guruhlar.svg",  label: "Mening guruhlarim", roles: ["Teacher"] },
   ];
   const adminItems: NavItem[] = [

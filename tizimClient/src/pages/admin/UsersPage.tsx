@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
+import { useTranslation } from "@/lib/i18n";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 const ROLE_COLORS: Record<string, string> = {
@@ -17,6 +18,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export function UsersPage() {
+  const t = useTranslation();
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -33,19 +35,19 @@ export function UsersPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Foydalanuvchilarni boshqarish</p>
+        <h1 className="text-2xl font-bold">{t.adminUsersTitle}</h1>
+        <p className="text-muted-foreground mt-1">{t.manageUsersSubtitle}</p>
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold">Foydalanuvchilar</h2>
-        <p className="text-muted-foreground mt-1 text-sm">Jami: {data?.totalCount ?? 0} ta</p>
+        <h2 className="text-lg font-semibold">{t.users}</h2>
+        <p className="text-muted-foreground mt-1 text-sm">{t.total}: {data?.totalCount ?? 0}</p>
       </div>
 
       {/* Search */}
       <div className="flex gap-2">
         <Input
-          placeholder="Email bo'yicha qidirish..."
+          placeholder={t.searchByEmail}
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { setSearch(searchInput); setPage(1); } }}
@@ -61,10 +63,10 @@ export function UsersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Ism Familiya</TableHead>
+                <TableHead>{t.fullName}</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead className="w-28">Rol</TableHead>
-                <TableHead className="w-40">Ro'yxatdan o'tgan</TableHead>
+                <TableHead className="w-28">{t.roleColumn}</TableHead>
+                <TableHead className="w-40">{t.registeredColumn}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -85,7 +87,7 @@ export function UsersPage() {
               {data?.items.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
-                    Foydalanuvchilar topilmadi
+                    {t.noUsersFound}
                   </TableCell>
                 </TableRow>
               )}

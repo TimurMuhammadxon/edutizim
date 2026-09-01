@@ -20,6 +20,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { MonthYearPicker } from "@/components/shared/MonthYearPicker";
 import { toast } from "@/components/ui/use-toast";
+import { useTranslation, type Translations } from "@/lib/i18n";
 import {
   ArrowLeft, KeyRound, Wallet, UserPlus, Layers, CalendarCheck2,
   Building2, CalendarClock, StickyNote, Pencil, ChevronLeft, ChevronRight, Check, X,
@@ -65,6 +66,7 @@ function formatDate(iso: string): string {
 }
 
 function NotesSection({ student, onSave, isPending }: { student: StudentDetailsDto; onSave: (notes: string) => void; isPending: boolean }) {
+  const t = useTranslation();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(student.notes ?? "");
 
@@ -74,26 +76,26 @@ function NotesSection({ student, onSave, isPending }: { student: StudentDetailsD
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold flex items-center gap-2">
             <StickyNote className="h-4 w-4 text-muted-foreground" />
-            Izohlar
+            {t.notesLabel}
           </span>
           {!editing && (
             <Button variant="ghost" size="sm" onClick={() => { setValue(student.notes ?? ""); setEditing(true); }}>
               <Pencil className="h-3.5 w-3.5 mr-1.5" />
-              Tahrirlash
+              {t.edit}
             </Button>
           )}
         </div>
         {editing ? (
           <div className="space-y-2">
-            <Textarea value={value} onChange={(e) => setValue(e.target.value)} rows={4} placeholder="Izoh qoldiring..." />
+            <Textarea value={value} onChange={(e) => setValue(e.target.value)} rows={4} placeholder={t.notesPlaceholder} />
             <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setEditing(false)}>Bekor</Button>
-              <Button size="sm" disabled={isPending} onClick={() => { onSave(value); setEditing(false); }}>Saqlash</Button>
+              <Button variant="outline" size="sm" onClick={() => setEditing(false)}>{t.cancel}</Button>
+              <Button size="sm" disabled={isPending} onClick={() => { onSave(value); setEditing(false); }}>{t.save}</Button>
             </div>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {student.notes || "Izoh yo'q"}
+            {student.notes || t.noNotes}
           </p>
         )}
       </CardContent>
@@ -101,7 +103,7 @@ function NotesSection({ student, onSave, isPending }: { student: StudentDetailsD
   );
 }
 
-function StudentAttendanceTab({ studentId }: { studentId: string }) {
+function StudentAttendanceTab({ studentId, t }: { studentId: string; t: Translations }) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -135,17 +137,17 @@ function StudentAttendanceTab({ studentId }: { studentId: string }) {
       {isLoading || !data ? (
         <PageLoader />
       ) : data.groups.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-10">Guruhlar yo'q</p>
+        <p className="text-sm text-muted-foreground text-center py-10">{t.noGroups}</p>
       ) : (
         data.groups.map((g) => (
           <Card key={g.groupId}>
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-sm">{g.groupName}</span>
-                <span className="text-xs text-muted-foreground">{g.presentCount} keldi / {g.absentCount} kelmadi</span>
+                <span className="text-xs text-muted-foreground">{g.presentCount} {t.presentSuffix} / {g.absentCount} {t.absentSuffix}</span>
               </div>
               {g.lessonDates.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Bu oyda darslar yo'q</p>
+                <p className="text-sm text-muted-foreground text-center py-4">{t.noLessonsThisMonth}</p>
               ) : (
                 <div className="overflow-x-auto">
                   <div className="flex gap-1.5">
@@ -175,6 +177,7 @@ function StudentAttendanceTab({ studentId }: { studentId: string }) {
 }
 
 export function StudentProfilePage() {
+  const t = useTranslation();
   const { id: studentId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -219,19 +222,22 @@ export function StudentProfilePage() {
       fullName: editForm.fullName, phone: editForm.phone,
       email: editForm.email || undefined, notes: editForm.notes || undefined,
     }),
-    onSuccess: () => { invalidate(); setEditOpen(false); toast({ title: "Talaba yangilandi" }); },
+    onSuccess: () => { invalidate(); setEditOpen(false); toast({ title: t.studentUpdated }); },
+    onError: (e: unknown) => toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" }),
   });
 
   const updateNotesMutation = useMutation({
     mutationFn: (notes: string) => studentsApi.update(studentId!, {
       fullName: student!.fullName, phone: student!.phone, email: student!.email, notes: notes || undefined,
     }),
-    onSuccess: () => { invalidate(); toast({ title: "Izoh saqlandi" }); },
+    onSuccess: () => { invalidate(); toast({ title: t.notesSaved }); },
+    onError: (e: unknown) => toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" }),
   });
 
   const createLoginMutation = useMutation({
     mutationFn: () => studentsApi.createLogin(studentId!, loginPassword),
-    onSuccess: () => { invalidate(); setLoginOpen(false); setLoginPassword(""); toast({ title: "Login yaratildi" }); },
+    onSuccess: () => { invalidate(); setLoginOpen(false); setLoginPassword(""); toast({ title: t.loginCreated }); },
+    onError: (e: unknown) => toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" }),
   });
 
   const addToGroupMutation = useMutation({
@@ -240,11 +246,11 @@ export function StudentProfilePage() {
       invalidate();
       setAddGroupOpen(false);
       setAddGroupId("");
-      toast({ title: "Guruhga qo'shildi" });
+      toast({ title: t.groupJoined });
     },
     onError: (e: unknown) => {
       const msg = getApiErrorMessage(e);
-      toast({ title: "Xatolik", description: msg ?? "Guruhga qo'shib bo'lmadi", variant: "destructive" });
+      toast({ title: t.error, description: msg ?? t.groupJoinFailed, variant: "destructive" });
     },
   });
 
@@ -258,10 +264,10 @@ export function StudentProfilePage() {
       qc.invalidateQueries({ queryKey: ["finance-payments", "student", studentId] });
       setPaymentOpen(false);
       setPaymentAmount("");
-      toast({ title: "To'lov qabul qilindi" });
+      toast({ title: t.paymentAccepted });
     },
     onError: () => {
-      toast({ title: "Xatolik", description: "To'lovni saqlab bo'lmadi", variant: "destructive" });
+      toast({ title: t.error, description: t.paymentSaveFailed, variant: "destructive" });
     },
   });
 
@@ -280,7 +286,7 @@ export function StudentProfilePage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <Button variant="ghost" size="sm" onClick={() => navigate("/crm/students")} className="-ml-2">
         <ArrowLeft className="h-4 w-4 mr-1.5" />
-        Talabalar
+        {t.studentsTitle}
       </Button>
 
       <Card>
@@ -300,12 +306,12 @@ export function StudentProfilePage() {
                   </p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
                     <CalendarClock className="h-3 w-3" />
-                    {student.startedAt ? `O'qishni boshlagan: ${formatDate(student.startedAt)}` : "Hali faollashtirilmagan"}
+                    {student.startedAt ? `${t.startedStudyingLabel}: ${formatDate(student.startedAt)}` : t.notActivatedYet}
                   </p>
                 </div>
                 {student.leadId && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Lid orqali qo'shilgan: {student.leadFullName}
+                    {t.joinedViaLead}: {student.leadFullName}
                   </p>
                 )}
               </div>
@@ -315,32 +321,32 @@ export function StudentProfilePage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <StatTile
               icon={Wallet}
-              label="Balans"
+              label={t.balanceColumn}
               value={`${student.totalBalance.toLocaleString()} so'm`}
               tone={student.totalBalance < 0 ? "negative" : "positive"}
             />
-            <StatTile icon={Layers} label="Guruhlar" value={`${student.groups.length} ta`} />
+            <StatTile icon={Layers} label={t.groups} value={`${student.groups.length}`} />
             <StatTile
               icon={CalendarCheck2}
-              label="Davomat"
+              label={t.attendanceAction}
               value={`${student.groups.reduce((n, g) => n + g.presentCount, 0)} / ${student.groups.reduce((n, g) => n + g.presentCount + g.absentCount, 0)}`}
             />
           </div>
 
           <div className="flex flex-wrap gap-2 pt-1 border-t border-transparent">
-            <Button variant="outline" size="sm" onClick={openEdit}>Tahrirlash</Button>
+            <Button variant="outline" size="sm" onClick={openEdit}>{t.edit}</Button>
             <Button variant="outline" size="sm" onClick={() => setAddGroupOpen(true)}>
               <UserPlus className="h-4 w-4 mr-1.5" />
-              Guruhga qo'shish
+              {t.addToGroupAction}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setPaymentOpen(true)} disabled={student.groups.length === 0}>
               <Wallet className="h-4 w-4 mr-1.5" />
-              To'lov qo'shish
+              {t.addPaymentAction}
             </Button>
             {!student.userId && (
               <Button variant="outline" size="sm" onClick={() => setLoginOpen(true)}>
                 <KeyRound className="h-4 w-4 mr-1.5" />
-                Login yaratish
+                {t.createLoginAction}
               </Button>
             )}
           </div>
@@ -349,14 +355,14 @@ export function StudentProfilePage() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as "groups" | "attendance" | "payments")}>
         <TabsList>
-          <TabsTrigger value="groups">Guruhlar</TabsTrigger>
-          <TabsTrigger value="attendance">Davomat</TabsTrigger>
-          <TabsTrigger value="payments">To'lovlar</TabsTrigger>
+          <TabsTrigger value="groups">{t.groups}</TabsTrigger>
+          <TabsTrigger value="attendance">{t.attendanceAction}</TabsTrigger>
+          <TabsTrigger value="payments">{t.paymentsTab}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="groups" className="space-y-2.5 mt-4">
           {student.groups.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-10">Guruhlar yo'q</p>
+            <p className="text-sm text-muted-foreground text-center py-10">{t.noGroups}</p>
           )}
           {student.groups.map((g) => (
             <Card
@@ -375,7 +381,7 @@ export function StudentProfilePage() {
                       <Badge variant="secondary" className="text-xs">{MEMBERSHIP_STATUS_LABELS[g.status]}</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      {g.teacherName ?? "O'qituvchi yo'q"} · {g.presentCount} keldi / {g.absentCount} kelmadi
+                      {g.teacherName ?? t.noTeacherAssigned} · {g.presentCount} {t.presentSuffix} / {g.absentCount} {t.absentSuffix}
                     </div>
                   </div>
                 </div>
@@ -388,7 +394,7 @@ export function StudentProfilePage() {
         </TabsContent>
 
         <TabsContent value="attendance" className="mt-4">
-          <StudentAttendanceTab studentId={studentId!} />
+          <StudentAttendanceTab studentId={studentId!} t={t} />
         </TabsContent>
 
         <TabsContent value="payments" className="mt-4">
@@ -397,11 +403,11 @@ export function StudentProfilePage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Guruh</TableHead>
-                    <TableHead>Summa</TableHead>
-                    <TableHead>Qaysi oy uchun</TableHead>
-                    <TableHead>Usul</TableHead>
-                    <TableHead>Sana</TableHead>
+                    <TableHead>{t.groupColumn}</TableHead>
+                    <TableHead>{t.amountColumn}</TableHead>
+                    <TableHead>{t.forMonthColumn}</TableHead>
+                    <TableHead>{t.methodColumn}</TableHead>
+                    <TableHead>{t.dateColumn}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -419,7 +425,7 @@ export function StudentProfilePage() {
                   {payments?.items.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                        To'lovlar yo'q
+                        {t.noPayments}
                       </TableCell>
                     </TableRow>
                   )}
@@ -440,33 +446,33 @@ export function StudentProfilePage() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Talabani tahrirlash</DialogTitle>
+            <DialogTitle>{t.editStudent}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Ism familiya</Label>
+              <Label>{t.fullName}</Label>
               <Input value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Telefon</Label>
+              <Label>{t.phoneNumber}</Label>
               <Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Email</Label>
+              <Label>{t.email}</Label>
               <Input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Izoh</Label>
+              <Label>{t.crmNotes}</Label>
               <Textarea value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>Bekor</Button>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>{t.cancel}</Button>
             <Button
               onClick={() => updateMutation.mutate()}
               disabled={!editForm.fullName.trim() || !editForm.phone.trim() || updateMutation.isPending}
             >
-              Saqlash
+              {t.save}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -476,30 +482,30 @@ export function StudentProfilePage() {
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Login yaratish</DialogTitle>
+            <DialogTitle>{t.createLoginTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Login (telefon)</Label>
+              <Label>{t.loginPhoneLabel}</Label>
               <Input value={student.phone} disabled />
             </div>
             <div className="space-y-1.5">
-              <Label>Parol</Label>
+              <Label>{t.passwordLabel}</Label>
               <Input
                 type="text"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                placeholder="Kamida 6 ta belgi"
+                placeholder={t.minSixChars}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLoginOpen(false)}>Bekor</Button>
+            <Button variant="outline" onClick={() => setLoginOpen(false)}>{t.cancel}</Button>
             <Button
               onClick={() => createLoginMutation.mutate()}
               disabled={loginPassword.length < 6 || createLoginMutation.isPending}
             >
-              Yaratish
+              {t.createAction}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -509,12 +515,12 @@ export function StudentProfilePage() {
       <Dialog open={addGroupOpen} onOpenChange={setAddGroupOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Guruhga qo'shish</DialogTitle>
+            <DialogTitle>{t.addToGroupAction}</DialogTitle>
           </DialogHeader>
           <div className="py-2">
             <Select value={addGroupId} onValueChange={setAddGroupId}>
               <SelectTrigger>
-                <SelectValue placeholder="Guruh tanlang" />
+                <SelectValue placeholder={t.selectGroup} />
               </SelectTrigger>
               <SelectContent>
                 {groupsNotJoined.map((g) => (
@@ -524,12 +530,12 @@ export function StudentProfilePage() {
             </Select>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddGroupOpen(false)}>Bekor</Button>
+            <Button variant="outline" onClick={() => setAddGroupOpen(false)}>{t.cancel}</Button>
             <Button
               disabled={!addGroupId || addToGroupMutation.isPending}
               onClick={() => addToGroupMutation.mutate()}
             >
-              Qo'shish
+              {t.add}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -539,11 +545,11 @@ export function StudentProfilePage() {
       <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>To'lov qo'shish</DialogTitle>
+            <DialogTitle>{t.addPaymentAction}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Guruh</Label>
+              <Label>{t.groupColumn}</Label>
               <Select
                 value={paymentGroupId}
                 onValueChange={(v) => {
@@ -556,7 +562,7 @@ export function StudentProfilePage() {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Guruh tanlang" />
+                  <SelectValue placeholder={t.selectGroup} />
                 </SelectTrigger>
                 <SelectContent>
                   {student.groups.map((g) => (
@@ -566,19 +572,19 @@ export function StudentProfilePage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Summa (so'm)</Label>
+              <Label>{t.amountColumn} (so'm)</Label>
               <Input type="number" min="0" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Qaysi oy uchun</Label>
+              <Label>{t.forMonthColumn}</Label>
               <MonthYearPicker value={paymentForMonth} onChange={setPaymentForMonth} />
             </div>
             <div className="space-y-1.5">
-              <Label>Sana</Label>
+              <Label>{t.dateColumn}</Label>
               <Input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>To'lov usuli</Label>
+              <Label>{t.paymentMethodLabel}</Label>
               <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -592,12 +598,12 @@ export function StudentProfilePage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPaymentOpen(false)}>Bekor</Button>
+            <Button variant="outline" onClick={() => setPaymentOpen(false)}>{t.cancel}</Button>
             <Button
               disabled={!paymentGroupId || !paymentAmount || Number(paymentAmount) <= 0 || !paymentForMonth || recordPaymentMutation.isPending}
               onClick={() => recordPaymentMutation.mutate()}
             >
-              Saqlash
+              {t.save}
             </Button>
           </DialogFooter>
         </DialogContent>

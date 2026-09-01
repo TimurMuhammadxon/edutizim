@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
 import { toast } from "@/components/ui/use-toast";
+import { getApiErrorMessage } from "@/lib/errors";
+import { useTranslation, type Translations } from "@/lib/i18n";
 import { Trash2, Search, X, Wallet, AlertTriangle, Users } from "lucide-react";
 import { PAYMENT_METHOD_LABELS, formatMonthLabel } from "@/lib/groupHelpers";
 
@@ -60,6 +62,7 @@ function StatTile({ icon: Icon, label, value, tone }: { icon: React.ElementType;
 }
 
 export function FinancePage() {
+  const t = useTranslation();
   const [tab, setTab] = useState<"current" | "period" | "payments">("current");
   const [draft, setDraft] = useState<Filters>(defaultFilters);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
@@ -106,8 +109,8 @@ export function FinancePage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Moliya</h1>
-        <p className="text-muted-foreground mt-1">Qarzdorlar, to'lovlar va davr bo'yicha tahlil</p>
+        <h1 className="text-2xl font-bold">{t.financeTitle}</h1>
+        <p className="text-muted-foreground mt-1">{t.financeSubtitle}</p>
       </div>
 
       {/* Filter bar */}
@@ -115,12 +118,12 @@ export function FinancePage() {
         <CardContent className="p-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
             <div className="space-y-1.5 col-span-2 lg:col-span-2">
-              <Label className="text-xs text-muted-foreground">Qidirish</Label>
+              <Label className="text-xs text-muted-foreground">{t.search}</Label>
               <div className="relative">
                 <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   className="pl-8"
-                  placeholder="Ism yoki telefon..."
+                  placeholder={t.searchByNameOrPhone}
                   value={draft.search}
                   onChange={(e) => setDraft({ ...draft, search: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && apply()}
@@ -129,14 +132,14 @@ export function FinancePage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Filial</Label>
+              <Label className="text-xs text-muted-foreground">{t.branchLabel}</Label>
               <Select
                 value={draft.branchId}
                 onValueChange={(v) => setDraft({ ...draft, branchId: v, groupId: "all" })}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Barcha filiallar</SelectItem>
+                  <SelectItem value="all">{t.allBranches}</SelectItem>
                   {branches?.map((b) => (
                     <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                   ))}
@@ -145,11 +148,11 @@ export function FinancePage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Guruh</Label>
+              <Label className="text-xs text-muted-foreground">{t.groups}</Label>
               <Select value={draft.groupId} onValueChange={(v) => setDraft({ ...draft, groupId: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Barcha guruhlar</SelectItem>
+                  <SelectItem value="all">{t.allGroups}</SelectItem>
                   {groupOptions?.items.map((g) => (
                     <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
                   ))}
@@ -158,12 +161,12 @@ export function FinancePage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Boshlanish sanasi</Label>
+              <Label className="text-xs text-muted-foreground">{t.fromDateLabel}</Label>
               <Input type="date" value={draft.fromDate} onChange={(e) => setDraft({ ...draft, fromDate: e.target.value })} />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Tugash sanasi</Label>
+              <Label className="text-xs text-muted-foreground">{t.toDateLabel}</Label>
               <Input type="date" value={draft.toDate} onChange={(e) => setDraft({ ...draft, toDate: e.target.value })} />
             </div>
           </div>
@@ -171,12 +174,12 @@ export function FinancePage() {
           <div className="flex items-center gap-2 mt-3">
             <Button size="sm" onClick={apply}>
               <Search className="h-4 w-4 mr-1.5" />
-              Qo'llash
+              {t.applyAction}
             </Button>
             {hasCustomFilters && (
               <Button size="sm" variant="ghost" onClick={reset}>
                 <X className="h-4 w-4 mr-1.5" />
-                Tozalash
+                {t.clearAction}
               </Button>
             )}
           </div>
@@ -187,20 +190,20 @@ export function FinancePage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatTile
           icon={Wallet}
-          label={`To'lovlar (${filters.fromDate} — ${filters.toDate})`}
+          label={`${t.paymentsStatLabel} (${filters.fromDate} — ${filters.toDate})`}
           value={`${(paymentsSummary?.totalAmount ?? 0).toLocaleString()} so'm`}
           tone="positive"
         />
         <StatTile
           icon={AlertTriangle}
-          label={`Davr uchun qarz (${periodDebts?.length ?? 0} talaba)`}
+          label={`${t.periodDebtStatLabel} (${periodDebts?.length ?? 0} ${t.studentColumn.toLowerCase()})`}
           value={`${periodDebtTotal.toLocaleString()} so'm`}
           tone={periodDebtTotal > 0 ? "negative" : undefined}
         />
         <StatTile
           icon={Users}
-          label="Joriy qarzdorlar soni"
-          value={`${currentDebtors?.length ?? 0} ta`}
+          label={t.currentDebtorsCountLabel}
+          value={`${currentDebtors?.length ?? 0}`}
           tone={(currentDebtors?.length ?? 0) > 0 ? "negative" : undefined}
         />
       </div>
@@ -212,7 +215,7 @@ export function FinancePage() {
             tab === "current" ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
           }`}
         >
-          Joriy qarzdorlar
+          {t.currentDebtorsTab}
         </button>
         <button
           onClick={() => setTab("period")}
@@ -220,7 +223,7 @@ export function FinancePage() {
             tab === "period" ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
           }`}
         >
-          Davr bo'yicha qarzlar
+          {t.periodDebtsTab}
         </button>
         <button
           onClick={() => setTab("payments")}
@@ -228,18 +231,18 @@ export function FinancePage() {
             tab === "payments" ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
           }`}
         >
-          To'lovlar
+          {t.paymentsTab}
         </button>
       </div>
 
-      {tab === "current" && <CurrentDebtorsTab debtors={currentDebtors} />}
-      {tab === "period" && <PeriodDebtsTab debtors={periodDebts} />}
-      {tab === "payments" && <PaymentsTab apiParams={apiParams} />}
+      {tab === "current" && <CurrentDebtorsTab debtors={currentDebtors} t={t} />}
+      {tab === "period" && <PeriodDebtsTab debtors={periodDebts} t={t} />}
+      {tab === "payments" && <PaymentsTab apiParams={apiParams} t={t} />}
     </div>
   );
 }
 
-function CurrentDebtorsTab({ debtors }: { debtors?: import("@/types").DebtorDto[] }) {
+function CurrentDebtorsTab({ debtors, t }: { debtors?: import("@/types").DebtorDto[]; t: Translations }) {
   if (!debtors) return <PageLoader />;
 
   return (
@@ -248,10 +251,10 @@ function CurrentDebtorsTab({ debtors }: { debtors?: import("@/types").DebtorDto[
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Talaba</TableHead>
-              <TableHead>Guruh</TableHead>
-              <TableHead>Balans</TableHead>
-              <TableHead className="text-right">Muddati o'tgan</TableHead>
+              <TableHead>{t.studentColumn}</TableHead>
+              <TableHead>{t.groupColumn}</TableHead>
+              <TableHead>{t.balanceColumn}</TableHead>
+              <TableHead className="text-right">{t.overdueColumn}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -266,15 +269,15 @@ function CurrentDebtorsTab({ debtors }: { debtors?: import("@/types").DebtorDto[
                   <span className="text-destructive font-semibold">{d.balance.toLocaleString()} so'm</span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Badge variant="destructive">{d.daysOverdue} kun</Badge>
-                  <div className="text-xs text-muted-foreground mt-0.5">{d.nextPaymentDueDate} dan</div>
+                  <Badge variant="destructive">{d.daysOverdue} {t.days}</Badge>
+                  <div className="text-xs text-muted-foreground mt-0.5">{d.nextPaymentDueDate} {t.sinceLabel}</div>
                 </TableCell>
               </TableRow>
             ))}
             {debtors.length === 0 && (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
-                  Qarzdorlar yo'q
+                  {t.noDebtors}
                 </TableCell>
               </TableRow>
             )}
@@ -285,7 +288,7 @@ function CurrentDebtorsTab({ debtors }: { debtors?: import("@/types").DebtorDto[
   );
 }
 
-function PeriodDebtsTab({ debtors }: { debtors?: import("@/types").PeriodDebtDto[] }) {
+function PeriodDebtsTab({ debtors, t }: { debtors?: import("@/types").PeriodDebtDto[]; t: Translations }) {
   if (!debtors) return <PageLoader />;
 
   return (
@@ -294,10 +297,10 @@ function PeriodDebtsTab({ debtors }: { debtors?: import("@/types").PeriodDebtDto
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Talaba</TableHead>
-              <TableHead>Guruh</TableHead>
-              <TableHead>Qarzdor oylar</TableHead>
-              <TableHead className="text-right">Davr uchun qarz</TableHead>
+              <TableHead>{t.studentColumn}</TableHead>
+              <TableHead>{t.groupColumn}</TableHead>
+              <TableHead>{t.debtorMonthsColumn}</TableHead>
+              <TableHead className="text-right">{t.periodDebtColumn}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -311,7 +314,7 @@ function PeriodDebtsTab({ debtors }: { debtors?: import("@/types").PeriodDebtDto
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {d.months.map((m) => (
-                      <Badge key={m.month} variant="outline" className="text-xs" title={`Kutilgan: ${m.expected.toLocaleString()} · To'langan: ${m.paid.toLocaleString()}`}>
+                      <Badge key={m.month} variant="outline" className="text-xs" title={`${t.expectedLabel}: ${m.expected.toLocaleString()} · ${t.paidLabel}: ${m.paid.toLocaleString()}`}>
                         {formatMonthLabel(m.month)}
                       </Badge>
                     ))}
@@ -325,7 +328,7 @@ function PeriodDebtsTab({ debtors }: { debtors?: import("@/types").PeriodDebtDto
             {debtors.length === 0 && (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
-                  Tanlangan davrda qarzlar yo'q
+                  {t.noPeriodDebts}
                 </TableCell>
               </TableRow>
             )}
@@ -336,7 +339,7 @@ function PeriodDebtsTab({ debtors }: { debtors?: import("@/types").PeriodDebtDto
   );
 }
 
-function PaymentsTab({ apiParams }: { apiParams: FinanceFilterParams }) {
+function PaymentsTab({ apiParams, t }: { apiParams: FinanceFilterParams; t: Translations }) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["finance-payments", apiParams],
@@ -348,8 +351,9 @@ function PaymentsTab({ apiParams }: { apiParams: FinanceFilterParams }) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["finance-payments"] });
       qc.invalidateQueries({ queryKey: ["finance-payments-summary"] });
-      toast({ title: "To'lov o'chirildi" });
+      toast({ title: t.paymentDeleted });
     },
+    onError: (e: unknown) => toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" }),
   });
 
   if (isLoading) return <PageLoader />;
@@ -360,13 +364,13 @@ function PaymentsTab({ apiParams }: { apiParams: FinanceFilterParams }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Talaba</TableHead>
-              <TableHead>Guruh</TableHead>
-              <TableHead>Summa</TableHead>
-              <TableHead>Qaysi oy uchun</TableHead>
-              <TableHead>Usul</TableHead>
-              <TableHead>Sana</TableHead>
-              <TableHead className="text-right w-16">Amallar</TableHead>
+              <TableHead>{t.studentColumn}</TableHead>
+              <TableHead>{t.groupColumn}</TableHead>
+              <TableHead>{t.amountColumn}</TableHead>
+              <TableHead>{t.forMonthColumn}</TableHead>
+              <TableHead>{t.methodColumn}</TableHead>
+              <TableHead>{t.dateColumn}</TableHead>
+              <TableHead className="text-right w-16">{t.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -383,7 +387,7 @@ function PaymentsTab({ apiParams }: { apiParams: FinanceFilterParams }) {
                 <TableCell className="text-right">
                   <button
                     onClick={() => {
-                      if (confirm("To'lovni o'chirishni tasdiqlaysizmi?")) deleteMutation.mutate(p.id);
+                      if (confirm(t.confirmDeletePayment)) deleteMutation.mutate(p.id);
                     }}
                     className="text-muted-foreground hover:text-destructive"
                   >
@@ -395,7 +399,7 @@ function PaymentsTab({ apiParams }: { apiParams: FinanceFilterParams }) {
             {data?.items.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
-                  To'lovlar yo'q
+                  {t.noPayments}
                 </TableCell>
               </TableRow>
             )}
