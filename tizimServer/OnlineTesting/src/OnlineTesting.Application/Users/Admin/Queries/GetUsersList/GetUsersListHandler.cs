@@ -41,10 +41,6 @@ public class GetUsersListHandler : IRequestHandler<GetUsersListQuery, PagedResul
                 u.Role,
                 u.IsActive,
                 u.CreatedAt,
-                SubscriptionExpiresAt = _db.Subscriptions
-                    .Where(s => s.UserId == u.Id)
-                    .Select(s => (DateTime?)s.ExpiresAt)
-                    .FirstOrDefault(),
             })
             .ToListAsync(ct);
 
@@ -57,8 +53,7 @@ public class GetUsersListHandler : IRequestHandler<GetUsersListQuery, PagedResul
                 r.LastName,
                 r.Role.ToString(),
                 r.IsActive,
-                r.CreatedAt,
-                r.SubscriptionExpiresAt))
+                r.CreatedAt))
             .ToList();
 
         return new PagedResult<UserAdminDto>(items, page, size, total);

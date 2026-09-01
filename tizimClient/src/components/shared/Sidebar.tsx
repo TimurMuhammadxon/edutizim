@@ -5,7 +5,6 @@ import {
   Menu,
   LogOut,
   Settings,
-  Banknote,
   UserCog,
   Home,
   Users,
@@ -55,10 +54,7 @@ function useNavItems() {
   const adminItems: NavItem[] = [
     { to: "/admin/branches",     icon: Building2,                    label: "Filiallar" },
     { to: "/admin/rooms",        icon: DoorOpen,                     label: "Xonalar" },
-    { to: "/subscription",       icon: "/pravadrive-icon-obuna.svg", label: t.subscription },
-    { to: "/admin/plans",        icon: Settings,                     label: t.plans },
     { to: "/admin/users",        icon: UserCog,                      label: t.users, roles: ["Owner"] },
-    { to: "/admin/payments",     icon: Banknote,                     label: t.payments, roles: ["Owner"] },
   ];
   return { navItems, crmItems, adminItems };
 }

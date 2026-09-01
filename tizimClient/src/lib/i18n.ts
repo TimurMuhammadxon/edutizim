@@ -20,14 +20,12 @@ const translations = {
     account: "Akkaunt",
     bilets: "Biletlar",
     progress: "Natijalarim",
-    subscription: "Obuna",
     groups: "Guruhlar",
     testLinks: "Test havolalari",
     adminPanel: "Admin panel",
     topics: "Mavzular",
     questions: "Savollar",
     applications: "Arizalar",
-    plans: "Tariflar",
 
     // Dashboard
     currentStreak: "Joriy seriya",
@@ -43,7 +41,6 @@ const translations = {
     bilet: "Bilet",
     startTest: "Testni boshlash",
     demo: "Demo",
-    active: "Faol",
     inactive: "Nofaol",
     questions20: "20 savol",
 
@@ -55,7 +52,6 @@ const translations = {
     finish: "Yakunlash",
     qoida: "Qoida",
     audioLearn: "Ovozli o'rganish",
-    comingSoon: "Tez kunda",
     answerFirst: "Avval savolga javob bering",
     showExplanationsLabel: "Qoida va tushuntirishlarni ko'rsatish",
     timeLeft: "Qolgan vaqt",
@@ -87,23 +83,6 @@ const translations = {
     good: "Yaxshi",
     excellent: "A'lo",
     answered: "Javob berildi",
-
-    // Subscription & Payments
-    subscriptionPlans: "Obuna tariflari",
-    mySubscription: "Mening obuna",
-    noSubscription: "Obuna yo'q",
-    expiresAt: "Muddati tugaydi",
-    startsAt: "Boshlanadi",
-    buySubscription: "Obuna olish",
-    payViaPayme: "Payme orqali to'lash",
-    payViaClick: "Click orqali to'lash",
-    twoWeeks: "2 hafta",
-    oneMonth: "1 oy",
-    twoMonths: "2 oy",
-    threeMonths: "3 oy",
-    studentPlan: "O'quvchi tarifi",
-    teacherPlan: "O'qituvchi tarifi",
-    uzs: "so'm",
 
     // Groups
     createGroup: "Guruh yaratish",
@@ -151,8 +130,6 @@ const translations = {
     questionText: "Savol matni",
     answers: "Javoblar",
     isCorrect: "To'g'ri javob",
-    grantSubscription: "Obuna berish",
-    price: "Narx",
     toggleActive: "Faollashtirish/o'chirish",
 
     // Common
@@ -176,7 +153,6 @@ const translations = {
     page: "Sahifa",
     total: "Jami",
     users: "Foydalanuvchilar",
-    payments: "To'lovlar",
     teacher: "O'qituvchi",
     settings: "Sozlamalar",
     profile: "Profil",
@@ -299,38 +275,6 @@ const translations = {
     inProgress: "Davom etmoqda",
     dayMon: "Du", dayTue: "Se", dayWed: "Ch", dayThu: "Pa", dayFri: "Ju", daySat: "Sh", daySun: "Ya",
 
-    // Subscription page
-    mostPopular: "Eng mashhur",
-    redirecting: "Yo'naltirilmoqda...",
-    noActivePlans: "Hozircha faol tariflar yo'q",
-    choosePlan: "O'zingizga mos tarifni tanlang va darhol boshlang",
-    mySubscriptionLabel: "Mening obunam",
-    expiredLabel: "Muddati o'tgan",
-    expiryDate: "Tugash sanasi",
-    noActiveSubscription: "Faol obuna yo'q",
-    selectPlanBelow: "Barcha biletlarga kirish uchun quyidagi tariflardan birini tanlang",
-    students: "Talabalar",
-    teachers: "O'qituvchilar",
-    studentPlanLabel: "Talaba tarifi",
-    teacherPlanLabel: "O'qituvchi tarifi",
-    studentPlanDesc: "Haydovchilik imtihoniga tayyorlanish uchun barcha kerakli vositalar",
-    teacherPlanDesc: "Talaba tarifi imkoniyatlari + guruh boshqaruvi va test havolalari",
-    paymentSecure: "Barcha to'lovlar xavfsiz.",
-    paymentQuestions: "To'lov bo'yicha savollar bormi?",
-    paymentError: "To'lov sahifasini ochishda xatolik",
-    saleBadge: "Sentabr oxirigacha",
-    saveLabel: "tejaysiz",
-    subscribeNow: "Obuna bo'lish",
-    trialActive: "Bepul kun faol",
-    trialHoursLeft: "{hours} soat qoldi",
-    allBiletsAccess: "Barcha biletlarga kirish",
-    unlimitedTests: "Cheksiz test topshirish",
-    examModeFeature: "Imtihon rejimi (25 daqiqa)",
-    errorAnalytics: "Xatolar tahlili va statistika",
-    groupManagement: "Guruhlar boshqaruvi",
-    createTestLinksFeature: "Test havolalari yaratish",
-    studentResults: "O'quvchilar natijalari",
-
     // Landing
     platformSubtitle: "Haydovchilik imtihoniga tayyorlanish platformasi",
     heroTitle1: "Birinchi urinishdayoq",
@@ -414,14 +358,12 @@ const translations = {
     account: "Аккаунт",
     bilets: "Билеты",
     progress: "Мои результаты",
-    subscription: "Подписка",
     groups: "Группы",
     testLinks: "Тестовые ссылки",
     adminPanel: "Админ панель",
     topics: "Темы",
     questions: "Вопросы",
     applications: "Заявки",
-    plans: "Тарифы",
 
     // Dashboard
     currentStreak: "Текущая серия",
@@ -437,7 +379,6 @@ const translations = {
     bilet: "Билет",
     startTest: "Начать тест",
     demo: "Демо",
-    active: "Активен",
     inactive: "Неактивен",
     questions20: "20 вопросов",
 
@@ -449,7 +390,6 @@ const translations = {
     finish: "Завершить",
     qoida: "Правило",
     audioLearn: "Аудио обучение",
-    comingSoon: "Скоро",
     answerFirst: "Сначала ответьте на вопрос",
     showExplanationsLabel: "Показать правила и объяснения",
     timeLeft: "Осталось времени",
@@ -481,23 +421,6 @@ const translations = {
     good: "Хорошо",
     excellent: "Отлично",
     answered: "Отвечено",
-
-    // Subscription & Payments
-    subscriptionPlans: "Тарифные планы",
-    mySubscription: "Моя подписка",
-    noSubscription: "Нет подписки",
-    expiresAt: "Истекает",
-    startsAt: "Начинается",
-    buySubscription: "Купить подписку",
-    payViaPayme: "Оплатить через Payme",
-    payViaClick: "Оплатить через Click",
-    twoWeeks: "2 недели",
-    oneMonth: "1 месяц",
-    twoMonths: "2 месяца",
-    threeMonths: "3 месяца",
-    studentPlan: "Тариф ученика",
-    teacherPlan: "Тариф учителя",
-    uzs: "сум",
 
     // Groups
     createGroup: "Создать группу",
@@ -545,8 +468,6 @@ const translations = {
     questionText: "Текст вопроса",
     answers: "Ответы",
     isCorrect: "Правильный ответ",
-    grantSubscription: "Выдать подписку",
-    price: "Цена",
     toggleActive: "Вкл/Выкл",
 
     // Common
@@ -570,7 +491,6 @@ const translations = {
     page: "Страница",
     total: "Всего",
     users: "Пользователи",
-    payments: "Платежи",
     teacher: "Учитель",
     settings: "Настройки",
     profile: "Профиль",
@@ -693,38 +613,6 @@ const translations = {
     inProgress: "В процессе",
     dayMon: "Пн", dayTue: "Вт", dayWed: "Ср", dayThu: "Чт", dayFri: "Пт", daySat: "Сб", daySun: "Вс",
 
-    // Subscription page
-    mostPopular: "Самый популярный",
-    redirecting: "Перенаправление...",
-    noActivePlans: "Нет активных тарифов",
-    choosePlan: "Выберите подходящий тариф и начните прямо сейчас",
-    mySubscriptionLabel: "Моя подписка",
-    expiredLabel: "Истёк",
-    expiryDate: "Дата окончания",
-    noActiveSubscription: "Нет активной подписки",
-    selectPlanBelow: "Выберите один из тарифов для доступа ко всем билетам",
-    students: "Ученики",
-    teachers: "Учителя",
-    studentPlanLabel: "Тариф ученика",
-    teacherPlanLabel: "Тариф учителя",
-    studentPlanDesc: "Все необходимые инструменты для подготовки к экзамену",
-    teacherPlanDesc: "Возможности тарифа ученика + управление группами и тестовые ссылки",
-    paymentSecure: "Все платежи безопасны.",
-    paymentQuestions: "Вопросы по оплате?",
-    saleBadge: "До конца сентября",
-    saveLabel: "экономия",
-    subscribeNow: "Оформить",
-    trialActive: "Бесплатный день активен",
-    trialHoursLeft: "осталось {hours} ч",
-    paymentError: "Ошибка при открытии страницы оплаты",
-    allBiletsAccess: "Доступ ко всем билетам",
-    unlimitedTests: "Неограниченное тестирование",
-    examModeFeature: "Режим экзамена (25 мин)",
-    errorAnalytics: "Анализ ошибок и статистика",
-    groupManagement: "Управление группами",
-    createTestLinksFeature: "Создание тестовых ссылок",
-    studentResults: "Результаты учеников",
-
     // Landing
     platformSubtitle: "Платформа подготовки к экзамену по вождению",
     heroTitle1: "Сдайте экзамен",
@@ -808,14 +696,12 @@ const translations = {
     account: "Аккаунт",
     bilets: "Билетлар",
     progress: "Натижаларим",
-    subscription: "Обуна",
     groups: "Гуруҳлар",
     testLinks: "Тест ҳаволалари",
     adminPanel: "Админ панел",
     topics: "Мавзулар",
     questions: "Саволлар",
     applications: "Аризалар",
-    plans: "Тарифлар",
 
     // Dashboard
     currentStreak: "Жорий серия",
@@ -831,7 +717,6 @@ const translations = {
     bilet: "Билет",
     startTest: "Тестни бошлаш",
     demo: "Демо",
-    active: "Фаол",
     inactive: "Нофаол",
     questions20: "20 савол",
 
@@ -843,7 +728,6 @@ const translations = {
     finish: "Якунлаш",
     qoida: "Қоида",
     audioLearn: "Овозли ўрганиш",
-    comingSoon: "Тез кунда",
     answerFirst: "Аввал саволга жавоб беринг",
     showExplanationsLabel: "Қоида ва тушунтиришларни кўрсатиш",
     timeLeft: "Қолган вақт",
@@ -875,23 +759,6 @@ const translations = {
     good: "Яхши",
     excellent: "Аъло",
     answered: "Жавоб берилди",
-
-    // Subscription & Payments
-    subscriptionPlans: "Обуна тарифлари",
-    mySubscription: "Менинг обуна",
-    noSubscription: "Обуна йўқ",
-    expiresAt: "Муддати тугайди",
-    startsAt: "Бошланади",
-    buySubscription: "Обуна олиш",
-    payViaPayme: "Payme орқали тўлаш",
-    payViaClick: "Click орқали тўлаш",
-    twoWeeks: "2 ҳафта",
-    oneMonth: "1 ой",
-    twoMonths: "2 ой",
-    threeMonths: "3 ой",
-    studentPlan: "Ўқувчи тарифи",
-    teacherPlan: "Ўқитувчи тарифи",
-    uzs: "сўм",
 
     // Groups
     createGroup: "Гуруҳ яратиш",
@@ -939,8 +806,6 @@ const translations = {
     questionText: "Савол матни",
     answers: "Жавоблар",
     isCorrect: "Тўғри жавоб",
-    grantSubscription: "Обуна бериш",
-    price: "Нарх",
     toggleActive: "Фаоллаштириш/ўчириш",
 
     // Common
@@ -964,7 +829,6 @@ const translations = {
     page: "Саҳифа",
     total: "Жами",
     users: "Фойдаланувчилар",
-    payments: "Тўловлар",
     teacher: "Ўқитувчи",
     settings: "Созламалар",
     profile: "Профил",
@@ -1087,38 +951,6 @@ const translations = {
     inProgress: "Давом этмоқда",
     dayMon: "Ду", dayTue: "Се", dayWed: "Чо", dayThu: "Па", dayFri: "Жу", daySat: "Ша", daySun: "Як",
 
-    // Subscription page
-    mostPopular: "Энг машҳур",
-    redirecting: "Йўналтирилмоқда...",
-    noActivePlans: "Ҳозирча фаол тарифлар йўқ",
-    choosePlan: "Ўзингизга мос тарифни танланг ва дарҳол бошланг",
-    mySubscriptionLabel: "Менинг обунам",
-    expiredLabel: "Муддати ўтган",
-    expiryDate: "Тугаш санаси",
-    noActiveSubscription: "Фаол обуна йўқ",
-    selectPlanBelow: "Барча билетларга кириш учун қуйидаги тарифлардан бирини танланг",
-    students: "Талабалар",
-    teachers: "Ўқитувчилар",
-    studentPlanLabel: "Талаба тарифи",
-    teacherPlanLabel: "Ўқитувчи тарифи",
-    studentPlanDesc: "Ҳайдовчилик имтиҳонига тайёрланиш учун барча керакли воситалар",
-    teacherPlanDesc: "Талаба тарифи имкониятлари + гуруҳ бошқаруви ва тест ҳаволалари",
-    paymentSecure: "Барча тўловлар хавфсиз.",
-    paymentQuestions: "Тўлов бўйича саволлар борми?",
-    paymentError: "Тўлов саҳифасини очишда хатолик",
-    saleBadge: "Сентябр охиригача",
-    saveLabel: "тежайсиз",
-    subscribeNow: "Обуна бўлиш",
-    trialActive: "Бепул кун фаол",
-    trialHoursLeft: "{hours} соат қолди",
-    allBiletsAccess: "Барча билетларга кириш",
-    unlimitedTests: "Чексиз тест топшириш",
-    examModeFeature: "Имтиҳон режими (25 дақиқа)",
-    errorAnalytics: "Хатолар таҳлили ва статистика",
-    groupManagement: "Гуруҳлар бошқаруви",
-    createTestLinksFeature: "Тест ҳаволалари яратиш",
-    studentResults: "Ўқувчилар натижалари",
-
     // Landing
     platformSubtitle: "Ҳайдовчилик имтиҳонига тайёрланиш платформаси",
     heroTitle1: "Биринчи уринишдаёқ",
@@ -1223,22 +1055,3 @@ export function getFlowLabel(flow: string): string {
   }
 }
 
-export function getDurationLabel(duration: string): string {
-  const tr = getT();
-  switch (duration) {
-    case "TwoWeeks": return tr.twoWeeks;
-    case "OneMonth": return tr.oneMonth;
-    case "TwoMonths": return tr.twoMonths;
-    case "ThreeMonths": return tr.threeMonths;
-    default: return duration;
-  }
-}
-
-export function getPlanTypeLabel(type: string): string {
-  const tr = getT();
-  switch (type) {
-    case "Student": return tr.studentPlan;
-    case "Teacher": return tr.teacherPlan;
-    default: return type;
-  }
-}

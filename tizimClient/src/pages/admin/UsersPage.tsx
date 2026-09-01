@@ -1,16 +1,12 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { adminUsersApi, adminPlansApi, type UserAdminDto } from "@/api/admin";
+import { adminUsersApi } from "@/api/admin";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
-import { toast } from "@/components/ui/use-toast";
-import { ChevronLeft, ChevronRight, Gift, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 const ROLE_COLORS: Record<string, string> = {
   Owner:      "bg-purple-950/50 text-purple-400 border border-purple-800/30",
@@ -21,33 +17,13 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export function UsersPage() {
-  const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
-  const [grantUser, setGrantUser] = useState<UserAdminDto | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users", page, search],
     queryFn: () => adminUsersApi.list({ search: search || undefined, page, pageSize: 20 }),
-  });
-
-  const { data: plans } = useQuery({
-    queryKey: ["admin-plans"],
-    queryFn: adminPlansApi.list,
-  });
-
-  const activePlans = plans?.filter((p) => p.isActive) ?? [];
-
-  const grantMutation = useMutation({
-    mutationFn: () => adminUsersApi.grantSubscription(grantUser!.id, selectedPlan),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-users"] });
-      setGrantUser(null);
-      toast({ title: "Obuna berildi" });
-    },
-    onError: () => toast({ variant: "destructive", title: "Xatolik yuz berdi" }),
   });
 
   const totalPages = data ? Math.ceil(data.totalCount / 20) : 1;
@@ -88,53 +64,27 @@ export function UsersPage() {
                 <TableHead>Ism Familiya</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead className="w-28">Rol</TableHead>
-                <TableHead className="w-44">Obuna tugashi</TableHead>
                 <TableHead className="w-40">Ro'yxatdan o'tgan</TableHead>
-                <TableHead className="text-right w-24">Amallar</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data?.items.map((u) => {
-                const expired = u.subscriptionExpiresAt
-                  ? new Date(u.subscriptionExpiresAt) < new Date()
-                  : true;
-                return (
-                  <TableRow key={u.id}>
-                    <TableCell className="text-sm">{[u.firstName, u.lastName].filter(Boolean).join(" ") || "—"}</TableCell>
-                    <TableCell className="font-mono text-sm">{u.email ?? u.phone ?? "—"}</TableCell>
-                    <TableCell>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ROLE_COLORS[u.role] ?? "bg-slate-900/50 text-slate-400"}`}>
-                        {u.role}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {u.subscriptionExpiresAt ? (
-                        <Badge variant={expired ? "secondary" : "success"} className="text-xs">
-                          {expired ? "Tugagan" : new Date(u.subscriptionExpiresAt).toLocaleDateString("ru-RU")}
-                        </Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Yo'q</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {new Date(u.createdAt).toLocaleDateString("ru-RU")}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Obuna berish"
-                        onClick={() => { setGrantUser(u); setSelectedPlan(activePlans[0]?.id ?? ""); }}
-                      >
-                        <Gift className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {data?.items.map((u) => (
+                <TableRow key={u.id}>
+                  <TableCell className="text-sm">{[u.firstName, u.lastName].filter(Boolean).join(" ") || "—"}</TableCell>
+                  <TableCell className="font-mono text-sm">{u.email ?? u.phone ?? "—"}</TableCell>
+                  <TableCell>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ROLE_COLORS[u.role] ?? "bg-slate-900/50 text-slate-400"}`}>
+                      {u.role}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {new Date(u.createdAt).toLocaleDateString("ru-RU")}
+                  </TableCell>
+                </TableRow>
+              ))}
               {data?.items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
                     Foydalanuvchilar topilmadi
                   </TableCell>
                 </TableRow>
@@ -155,39 +105,6 @@ export function UsersPage() {
           </Button>
         </div>
       )}
-
-      {/* Grant subscription dialog */}
-      <Dialog open={!!grantUser} onOpenChange={(o) => !o && setGrantUser(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Obuna berish</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <p className="text-sm text-muted-foreground font-mono">{grantUser?.email}</p>
-            <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-              <SelectTrigger>
-                <SelectValue placeholder="Reja tanlang" />
-              </SelectTrigger>
-              <SelectContent>
-                {activePlans.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.type} — {p.duration} ({p.price.toLocaleString()} so'm)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setGrantUser(null)}>Bekor</Button>
-            <Button
-              onClick={() => grantMutation.mutate()}
-              disabled={!selectedPlan || grantMutation.isPending}
-            >
-              {grantMutation.isPending ? "Berilmoqda..." : "Berish"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OnlineTesting.Application.Subscriptions.Admin.Commands.GrantSubscription;
 using OnlineTesting.Application.Users.Admin.Queries.GetUsersList;
 using OnlineTesting.Domain.Authorization;
 
@@ -21,13 +20,4 @@ public class AdminUsersController : ControllerBase
         var result = await _sender.Send(new GetUsersListQuery(search, page, pageSize), ct);
         return Ok(result);
     }
-
-    [HttpPost("{userId:guid}/subscription")]
-    public async Task<IActionResult> Grant(Guid userId, [FromBody] GrantBody body, CancellationToken ct)
-    {
-        var result = await _sender.Send(new GrantSubscriptionCommand(userId, body.PlanId), ct);
-        return Ok(result);
-    }
-
-    public record GrantBody(Guid PlanId);
 }

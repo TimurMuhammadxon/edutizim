@@ -24,36 +24,6 @@ export interface RegisterResponse {
   organizationName: string;
 }
 
-// Subscription Plans
-export interface SubscriptionPlanDto {
-  id: string;
-  type: string;
-  duration: string;
-  price: number;
-  isActive: boolean;
-}
-
-export interface MySubscriptionDto {
-  subscriptionId: string;
-  planType: string;
-  planDuration: string;
-  planPrice: number;
-  startsAt: string;
-  expiresAt: string;
-  isActive: boolean;
-  isTrial: boolean;
-}
-
-// Payment
-export interface InitiatePaymentRequest {
-  planId: string;
-}
-
-export interface InitiatePaymentResponse {
-  orderId: string;
-  checkoutUrl: string;
-}
-
 export interface PagedResult<T> {
   items: T[];
   page: number;

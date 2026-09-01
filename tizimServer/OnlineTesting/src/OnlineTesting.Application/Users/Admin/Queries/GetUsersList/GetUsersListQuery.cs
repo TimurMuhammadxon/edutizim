@@ -14,5 +14,4 @@ public record UserAdminDto(
     string? LastName,
     string Role,
     bool IsActive,
-    DateTime CreatedAt,
-    DateTime? SubscriptionExpiresAt);
+    DateTime CreatedAt);

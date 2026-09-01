@@ -6,12 +6,9 @@ import { ProtectedRoute } from "@/components/shared/ProtectedRoute";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { RegisterPage } from "@/pages/auth/RegisterPage";
 import { HomePage } from "@/pages/HomePage";
-import { SubscriptionPage } from "@/pages/student/SubscriptionPage";
 import { MyGroupsPage } from "@/pages/teacher/MyGroupsPage";
-import { PlansPage } from "@/pages/admin/PlansPage";
 import { LandingPage } from "@/pages/public/LandingPage";
 import { UsersPage } from "@/pages/admin/UsersPage";
-import { PaymentsPage } from "@/pages/admin/PaymentsPage";
 import { GroupsPage } from "@/pages/crm/GroupsPage";
 import { GroupProfilePage } from "@/pages/crm/GroupProfilePage";
 import { FinancePage } from "@/pages/crm/FinancePage";
@@ -43,14 +40,6 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: "/home", element: <HomePage /> },
-      {
-        path: "/subscription",
-        element: (
-          <ProtectedRoute roles={["Owner", "SuperAdmin", "OrgAdmin"]}>
-            <SubscriptionPage />
-          </ProtectedRoute>
-        ),
-      },
       {
         path: "/crm/leads",
         element: (
@@ -116,14 +105,6 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "/admin/plans",
-        element: (
-          <ProtectedRoute roles={["OrgAdmin", "SuperAdmin", "Owner"]}>
-            <PlansPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: "/admin/branches",
         element: (
           <ProtectedRoute roles={["OrgAdmin", "SuperAdmin", "Owner"]}>
@@ -152,14 +133,6 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute roles={["Owner"]}>
             <UsersPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/admin/payments",
-        element: (
-          <ProtectedRoute roles={["Owner"]}>
-            <PaymentsPage />
           </ProtectedRoute>
         ),
       },

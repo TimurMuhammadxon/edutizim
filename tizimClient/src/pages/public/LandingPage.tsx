@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth";
-import { subscriptionsApi } from "@/api/subscriptions";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore, type LangCode } from "@/store/language";
 import { Users, Link2, BarChart3 } from "lucide-react";
@@ -83,7 +81,6 @@ export function LandingPage() {
   const t = useTranslation();
   const { lang, setLang } = useLanguageStore();
   const isLoggedIn = !!accessToken;
-  const isPrivileged = !!(user && ["Teacher", "OrgAdmin", "SuperAdmin", "Owner"].includes(user.role));
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -101,15 +98,6 @@ export function LandingPage() {
       document.head.appendChild(link);
     }
   }, []);
-
-  const { data: subscription } = useQuery({
-    queryKey: ["my-subscription"],
-    queryFn: subscriptionsApi.getMy,
-    enabled: isLoggedIn && !isPrivileged,
-    retry: false,
-  });
-
-  void subscription;
 
   return (
     <div
@@ -162,10 +150,6 @@ export function LandingPage() {
                   <span className="lp-username" style={{ fontSize: 13, color: "#64748b", marginRight: 4 }}>
                     {user?.firstName ?? user?.email?.split("@")[0] ?? user?.phone}
                   </span>
-                  <button className="lp-btn-outline" style={{ padding: "9px 18px", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }} onClick={() => navigate("/subscription")}>
-                    <img src="/pravadrive-icon-obuna.svg" alt="" style={{ width: 16, height: 16 }} />
-                    {t.subscription}
-                  </button>
                   <button className="lp-btn-primary" style={{ padding: "9px 22px", fontSize: 13, whiteSpace: "nowrap" }} onClick={() => navigate("/home")}>
                     {t.account} →
                   </button>

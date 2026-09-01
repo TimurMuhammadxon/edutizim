@@ -14,6 +14,10 @@ public class SetMembershipStatusHandler : IRequestHandler<SetMembershipStatusCom
 
     public async Task Handle(SetMembershipStatusCommand request, CancellationToken ct)
     {
+        var groupExists = await _db.Groups.AnyAsync(g => g.Id == request.GroupId, ct);
+        if (!groupExists)
+            throw new NotFoundException($"Group '{request.GroupId}' not found.");
+
         var membership = await _db.GroupStudents.FirstOrDefaultAsync(
             gs => gs.GroupId == request.GroupId && gs.StudentId == request.StudentId, ct)
             ?? throw new NotFoundException($"Student '{request.StudentId}' is not a member of this group.");

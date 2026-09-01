@@ -6,8 +6,6 @@ using OnlineTesting.Application.Common.Interfaces;
 using OnlineTesting.Domain.Common;
 using OnlineTesting.Domain.Crm;
 using OnlineTesting.Domain.Organizations;
-using OnlineTesting.Domain.Payments;
-using OnlineTesting.Domain.Subscriptions;
 using OnlineTesting.Domain.Users;
 
 namespace OnlineTesting.Infrastructure.Persistence;
@@ -38,12 +36,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<GroupScheduleSlot> GroupScheduleSlots => Set<GroupScheduleSlot>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<Payment> TuitionPayments => Set<Payment>();
-
-    public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
-    public DbSet<Subscription> Subscriptions => Set<Subscription>();
-    public DbSet<PaymentOrder> PaymentOrders => Set<PaymentOrder>();
-    public DbSet<PaymeTransaction> PaymeTransactions => Set<PaymeTransaction>();
-    public DbSet<ClickTransaction> ClickTransactions => Set<ClickTransaction>();
 
     public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
         => Database.BeginTransactionAsync(cancellationToken);
