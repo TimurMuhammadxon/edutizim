@@ -5,7 +5,6 @@ import { studentsApi } from "@/api/students";
 import { financeApi } from "@/api/finance";
 import { groupsApi } from "@/api/groups";
 import { useBranchStore } from "@/store/branch";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,35 +12,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
+import { CrudPageHeader } from "@/components/shared/CrudPageHeader";
+import { CrudTable, type CrudColumn } from "@/components/shared/CrudTable";
+import { CrudFormDialog } from "@/components/shared/CrudFormDialog";
 import { toast } from "@/components/ui/use-toast";
-import { Plus, Pencil, Search, KeyRound } from "lucide-react";
+import { getApiErrorMessage } from "@/lib/errors";
+import { useTranslation } from "@/lib/i18n";
+import { Search, Pencil, KeyRound } from "lucide-react";
 import { formatPhone } from "@/lib/groupHelpers";
 import type { StudentDto } from "@/types";
-
-const FINANCIAL_STATUS_OPTIONS = [
-  { value: "WithDebt", label: "Qarzdor" },
-  { value: "WithDiscount", label: "Chegirmali" },
-  { value: "WithoutDebt", label: "Qarzi yo'q" },
-  { value: "PositiveBalance", label: "Musbat balans" },
-  { value: "PaidThisMonth", label: "Shu oyda to'lagan" },
-];
-
-const STUDENT_STATUS_OPTIONS = [
-  { value: "AddedThisMonth", label: "Shu oyda qo'shilgan" },
-  { value: "Trial", label: "Sinov darsida" },
-  { value: "Active", label: "Faol" },
-  { value: "Frozen", label: "Muzlatilgan" },
-  { value: "WithoutGroup", label: "Guruhsiz" },
-  { value: "LeftAfterTrial", label: "Sinovdan keyin ketgan" },
-];
 
 type FormState = { fullName: string; phone: string; email: string; notes: string };
 const emptyForm: FormState = { fullName: "", phone: "", email: "", notes: "" };
 
 export function StudentsPage() {
+  const t = useTranslation();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const branchId = useBranchStore((s) => s.branchId);
@@ -56,9 +43,26 @@ export function StudentsPage() {
   const [loginStudent, setLoginStudent] = useState<StudentDto | null>(null);
   const [loginPassword, setLoginPassword] = useState("");
 
+  const FINANCIAL_STATUS_OPTIONS = [
+    { value: "WithDebt", label: t.financialWithDebt },
+    { value: "WithDiscount", label: t.financialWithDiscount },
+    { value: "WithoutDebt", label: t.financialWithoutDebt },
+    { value: "PositiveBalance", label: t.financialPositiveBalance },
+    { value: "PaidThisMonth", label: t.financialPaidThisMonth },
+  ];
+
+  const STUDENT_STATUS_OPTIONS = [
+    { value: "AddedThisMonth", label: t.studentAddedThisMonth },
+    { value: "Trial", label: t.studentTrial },
+    { value: "Active", label: t.studentActive },
+    { value: "Frozen", label: t.studentFrozen },
+    { value: "WithoutGroup", label: t.studentWithoutGroup },
+    { value: "LeftAfterTrial", label: t.studentLeftAfterTrial },
+  ];
+
   useEffect(() => {
-    const t = setTimeout(() => setSearch(searchInput), 250);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setSearch(searchInput), 250);
+    return () => clearTimeout(timer);
   }, [searchInput]);
 
   const { data, isLoading } = useQuery({
@@ -85,14 +89,18 @@ export function StudentsPage() {
   });
   const debtorStudentIds = new Set(debtorsResult?.items.map((d) => d.studentId));
 
+  const onError = (e: unknown) =>
+    toast({ title: t.error, description: getApiErrorMessage(e), variant: "destructive" });
+
   const createMutation = useMutation({
     mutationFn: () =>
       studentsApi.create({ branchId: branchId!, fullName: form.fullName, phone: form.phone, email: form.email || undefined }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["crm-students"] });
       setDialogOpen(false);
-      toast({ title: "Talaba qo'shildi" });
+      toast({ title: t.studentAdded });
     },
+    onError,
   });
 
   const updateMutation = useMutation({
@@ -106,13 +114,15 @@ export function StudentsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["crm-students"] });
       setDialogOpen(false);
-      toast({ title: "Talaba yangilandi" });
+      toast({ title: t.studentUpdated });
     },
+    onError,
   });
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => studentsApi.toggleActive(id, isActive),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["crm-students"] }),
+    onError,
   });
 
   const createLoginMutation = useMutation({
@@ -121,8 +131,9 @@ export function StudentsPage() {
       qc.invalidateQueries({ queryKey: ["crm-students"] });
       setLoginStudent(null);
       setLoginPassword("");
-      toast({ title: "Login yaratildi" });
+      toast({ title: t.loginCreated });
     },
+    onError,
   });
 
   const openCreate = () => {
@@ -139,24 +150,82 @@ export function StudentsPage() {
 
   if (isLoading) return <PageLoader />;
 
+  const columns: CrudColumn<StudentDto>[] = [
+    {
+      header: t.fullName,
+      render: (student) => (
+        <span className="font-medium">
+          {student.fullName}
+          {student.leadId && <Badge variant="secondary" className="text-xs ml-2">{t.viaLead}</Badge>}
+          {debtorStudentIds.has(student.id) && <Badge variant="destructive" className="text-xs ml-2">{t.debtorBadge}</Badge>}
+        </span>
+      ),
+    },
+    {
+      header: t.phoneNumber,
+      render: (student) => <span className="font-mono text-base font-medium tracking-wide">{formatPhone(student.phone)}</span>,
+    },
+    {
+      header: t.status,
+      render: (student) => (
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <Switch
+            checked={student.isActive}
+            onCheckedChange={(checked) => toggleMutation.mutate({ id: student.id, isActive: checked })}
+          />
+          <Badge variant={student.isActive ? "success" : "secondary"} className="text-xs">
+            {student.isActive ? t.studying : t.left}
+          </Badge>
+        </div>
+      ),
+    },
+    {
+      header: t.joined,
+      render: (student) => (
+        <span className="text-sm text-muted-foreground">{new Date(student.createdAt).toLocaleDateString("ru-RU")}</span>
+      ),
+    },
+    {
+      header: t.actions,
+      className: "text-right w-24",
+      render: (student) => (
+        <div className="text-right" onClick={(e) => e.stopPropagation()}>
+          {student.userId ? (
+            <Badge variant="success" className="text-xs mr-1">{t.hasLogin}</Badge>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              title={t.createLoginAction}
+              onClick={() => { setLoginStudent(student); setLoginPassword(""); }}
+            >
+              <KeyRound className="h-4 w-4 text-cyan-500" />
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" onClick={() => openEdit(student)}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Talabalar</h1>
-          <p className="text-muted-foreground mt-1">Jami: {data?.totalCount ?? 0} ta</p>
-        </div>
-        <Button onClick={openCreate} disabled={!branchId}>
-          <Plus className="h-4 w-4 mr-2" />
-          Talaba qo'shish
-        </Button>
-      </div>
+      <CrudPageHeader
+        title={t.studentsTitle}
+        count={data?.totalCount ?? 0}
+        countLabel={t.total}
+        addLabel={t.addStudent}
+        onAdd={openCreate}
+        addDisabled={!branchId}
+      />
 
       <div className="flex flex-wrap gap-2">
         <div className="relative max-w-sm flex-1 min-w-[200px]">
           <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Ism yoki telefon bo'yicha qidirish..."
+            placeholder={t.searchByNameOrPhone}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="pl-8"
@@ -165,10 +234,10 @@ export function StudentsPage() {
 
         <Select value={groupFilter} onValueChange={setGroupFilter}>
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Guruh" />
+            <SelectValue placeholder={t.groups} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Barcha guruhlar</SelectItem>
+            <SelectItem value="all">{t.allGroups}</SelectItem>
             {groupOptions?.items.map((g) => (
               <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
             ))}
@@ -177,10 +246,10 @@ export function StudentsPage() {
 
         <Select value={financialFilter} onValueChange={setFinancialFilter}>
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="Moliyaviy holat" />
+            <SelectValue placeholder={t.financialStatusLabel} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Barcha moliyaviy holatlar</SelectItem>
+            <SelectItem value="all">{t.allFinancialStatuses}</SelectItem>
             {FINANCIAL_STATUS_OPTIONS.map((o) => (
               <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
             ))}
@@ -189,10 +258,10 @@ export function StudentsPage() {
 
         <Select value={studentStatusFilter} onValueChange={setStudentStatusFilter}>
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="Talaba holati" />
+            <SelectValue placeholder={t.studentStatusLabel} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Barcha holatlar</SelectItem>
+            <SelectItem value="all">{t.allStudentStatuses}</SelectItem>
             {STUDENT_STATUS_OPTIONS.map((o) => (
               <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
             ))}
@@ -200,136 +269,69 @@ export function StudentsPage() {
         </Select>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Ism</TableHead>
-                <TableHead>Telefon</TableHead>
-                <TableHead>Holat</TableHead>
-                <TableHead>Qo'shilgan</TableHead>
-                <TableHead className="text-right w-24">Amallar</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data?.items.map((student) => (
-                <TableRow key={student.id} className="cursor-pointer" onClick={() => navigate(`/crm/students/${student.id}`)}>
-                  <TableCell className="font-medium">
-                    {student.fullName}
-                    {student.leadId && <Badge variant="secondary" className="text-xs ml-2">lid orqali</Badge>}
-                    {debtorStudentIds.has(student.id) && <Badge variant="destructive" className="text-xs ml-2">Qarzdor</Badge>}
-                  </TableCell>
-                  <TableCell className="font-mono text-base font-medium tracking-wide">{formatPhone(student.phone)}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={student.isActive}
-                        onCheckedChange={(checked) => toggleMutation.mutate({ id: student.id, isActive: checked })}
-                      />
-                      <Badge variant={student.isActive ? "success" : "secondary"} className="text-xs">
-                        {student.isActive ? "O'qiyapti" : "Ketgan"}
-                      </Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(student.createdAt).toLocaleDateString("ru-RU")}
-                  </TableCell>
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    {student.userId ? (
-                      <Badge variant="success" className="text-xs mr-1">Login bor</Badge>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Login yaratish"
-                        onClick={() => { setLoginStudent(student); setLoginPassword(""); }}
-                      >
-                        <KeyRound className="h-4 w-4 text-cyan-500" />
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(student)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {data?.items.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                    Talabalar topilmadi
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <CrudTable
+        columns={columns}
+        items={data?.items ?? []}
+        getKey={(s) => s.id}
+        emptyMessage={t.noStudentsFound}
+        onRowClick={(s) => navigate(`/crm/students/${s.id}`)}
+      />
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editing ? "Talabani tahrirlash" : "Yangi talaba"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label>Ism familiya</Label>
-              <Input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Telefon</Label>
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+998 XX XXX XX XX" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Email</Label>
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            </div>
-            {editing && (
-              <div className="space-y-1.5">
-                <Label>Izoh</Label>
-                <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-              </div>
-            )}
+      <CrudFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        title={editing ? t.editStudent : t.newStudent}
+        onSave={() => (editing ? updateMutation.mutate() : createMutation.mutate())}
+        saveDisabled={!form.fullName.trim() || !form.phone.trim() || createMutation.isPending || updateMutation.isPending}
+        saving={createMutation.isPending || updateMutation.isPending}
+      >
+        <div className="space-y-1.5">
+          <Label>{t.fullName}</Label>
+          <Input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t.phoneNumber}</Label>
+          <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+998 XX XXX XX XX" />
+        </div>
+        <div className="space-y-1.5">
+          <Label>{t.email}</Label>
+          <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        </div>
+        {editing && (
+          <div className="space-y-1.5">
+            <Label>{t.crmNotes}</Label>
+            <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Bekor</Button>
-            <Button
-              onClick={() => (editing ? updateMutation.mutate() : createMutation.mutate())}
-              disabled={!form.fullName.trim() || !form.phone.trim() || createMutation.isPending || updateMutation.isPending}
-            >
-              Saqlash
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        )}
+      </CrudFormDialog>
 
       <Dialog open={!!loginStudent} onOpenChange={(o) => !o && setLoginStudent(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Login yaratish</DialogTitle>
+            <DialogTitle>{t.createLoginTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Login (telefon)</Label>
+              <Label>{t.loginPhoneLabel}</Label>
               <Input value={loginStudent?.phone ?? ""} disabled />
             </div>
             <div className="space-y-1.5">
-              <Label>Parol</Label>
+              <Label>{t.passwordLabel}</Label>
               <Input
                 type="text"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                placeholder="Kamida 6 ta belgi"
+                placeholder={t.minSixChars}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLoginStudent(null)}>Bekor</Button>
+            <Button variant="outline" onClick={() => setLoginStudent(null)}>{t.cancel}</Button>
             <Button
               onClick={() => createLoginMutation.mutate()}
               disabled={loginPassword.length < 6 || createLoginMutation.isPending}
             >
-              Yaratish
+              {t.createAction}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -44,8 +44,8 @@ function useNavItems() {
   ];
   const crmRoles = ["Staff", "OrgAdmin", "SuperAdmin", "Owner"];
   const crmItems: NavItem[] = [
-    { to: "/crm/leads",         icon: Users,                            label: "Lidlar", roles: crmRoles },
-    { to: "/crm/students",      icon: GraduationCap,                    label: "Talabalar", roles: crmRoles },
+    { to: "/crm/leads",         icon: Users,                            label: t.leadsTitle, roles: crmRoles },
+    { to: "/crm/students",      icon: GraduationCap,                    label: t.studentsTitle, roles: crmRoles },
     { to: "/crm/groups",        icon: "/pravadrive-icon-guruhlar.svg",  label: t.groups, roles: crmRoles },
     { to: "/crm/finance",       icon: Wallet,                           label: "Moliya", roles: crmRoles },
     { to: "/crm/tasks",         icon: ListChecks,                       label: "Vazifalar", roles: crmRoles },
@@ -53,8 +53,8 @@ function useNavItems() {
     { to: "/teacher/my-groups", icon: "/pravadrive-icon-guruhlar.svg",  label: "Mening guruhlarim", roles: ["Teacher"] },
   ];
   const adminItems: NavItem[] = [
-    { to: "/admin/branches",     icon: Building2,                    label: "Filiallar" },
-    { to: "/admin/rooms",        icon: DoorOpen,                     label: "Xonalar" },
+    { to: "/admin/branches",     icon: Building2,                    label: t.branchesTitle },
+    { to: "/admin/rooms",        icon: DoorOpen,                     label: t.roomsTitle },
     { to: "/admin/users",        icon: UserCog,                      label: t.users, roles: ["Owner"] },
   ];
   return { navItems, crmItems, adminItems };
