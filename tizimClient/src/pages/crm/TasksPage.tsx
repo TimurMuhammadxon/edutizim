@@ -1,0 +1,167 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { tasksApi } from "@/api/tasks";
+import { leadsApi } from "@/api/leads";
+import { useAuthStore } from "@/store/auth";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { PageLoader } from "@/components/shared/LoadingSpinner";
+import { toast } from "@/components/ui/use-toast";
+import { Plus, Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type FormState = { title: string; description: string; dueAt: string; leadId: string };
+const emptyForm: FormState = { title: "", description: "", dueAt: "", leadId: "" };
+
+export function TasksPage() {
+  const qc = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [form, setForm] = useState<FormState>(emptyForm);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["crm-tasks"],
+    queryFn: () => tasksApi.list({ status: "Pending", pageSize: 100 }),
+  });
+
+  const { data: leads } = useQuery({
+    queryKey: ["crm-leads-all"],
+    queryFn: () => leadsApi.list({ pageSize: 100 }),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      tasksApi.create({
+        title: form.title,
+        description: form.description || undefined,
+        dueAt: new Date(form.dueAt).toISOString(),
+        assignedToUserId: user!.id,
+        leadId: form.leadId || undefined,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["crm-tasks"] });
+      setDialogOpen(false);
+      setForm(emptyForm);
+      toast({ title: "Vazifa qo'shildi" });
+    },
+  });
+
+  const completeMutation = useMutation({
+    mutationFn: (id: string) => tasksApi.complete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["crm-tasks"] }),
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: (id: string) => tasksApi.cancel(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["crm-tasks"] }),
+  });
+
+  if (isLoading) return <PageLoader />;
+
+  const now = Date.now();
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Vazifalar</h1>
+          <p className="text-muted-foreground mt-1">Lidlar bilan ishlash rejasi</p>
+        </div>
+        <Button onClick={() => setDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Vazifa qo'shish
+        </Button>
+      </div>
+
+      <div className="space-y-3">
+        {data?.items.map((task) => {
+          const overdue = new Date(task.dueAt).getTime() < now;
+          return (
+            <Card key={task.id}>
+              <CardContent className="p-4 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{task.title}</p>
+                    {overdue && <Badge variant="destructive" className="text-xs">Kechikkan</Badge>}
+                  </div>
+                  {task.leadFullName && (
+                    <p className="text-sm text-muted-foreground mt-0.5">{task.leadFullName}</p>
+                  )}
+                  {task.description && (
+                    <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
+                  )}
+                  <p className={cn("text-xs mt-2", overdue ? "text-red-500 font-medium" : "text-muted-foreground")}>
+                    {new Date(task.dueAt).toLocaleString("ru-RU")}
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Button variant="outline" size="icon" onClick={() => completeMutation.mutate(task.id)} title="Bajarildi">
+                    <Check className="h-4 w-4 text-emerald-500" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={() => cancelMutation.mutate(task.id)} title="Bekor qilish">
+                    <X className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+        {data?.items.length === 0 && (
+          <Card>
+            <CardContent className="text-center text-muted-foreground py-10">
+              Faol vazifalar yo'q
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Yangi vazifa</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Sarlavha</Label>
+              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Muddati</Label>
+              <Input type="datetime-local" value={form.dueAt} onChange={(e) => setForm({ ...form, dueAt: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Lid (ixtiyoriy)</Label>
+              <Select value={form.leadId} onValueChange={(v) => setForm({ ...form, leadId: v })}>
+                <SelectTrigger><SelectValue placeholder="Lid tanlang" /></SelectTrigger>
+                <SelectContent>
+                  {leads?.items.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.fullName} — {l.phone}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Izoh</Label>
+              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Bekor</Button>
+            <Button
+              onClick={() => createMutation.mutate()}
+              disabled={!form.title.trim() || !form.dueAt || createMutation.isPending}
+            >
+              Saqlash
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

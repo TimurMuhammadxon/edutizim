@@ -1,0 +1,46 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OnlineTesting.Domain.Users;
+
+namespace OnlineTesting.Infrastructure.Persistence.Configurations;
+
+public class UserConfiguration : IEntityTypeConfiguration<User>
+{
+    public void Configure(EntityTypeBuilder<User> builder)
+    {
+        builder.HasKey(u => u.Id);
+
+        builder.Property(u => u.Email).HasMaxLength(256);
+        builder.HasIndex(u => u.Email).IsUnique();
+
+        builder.Property(u => u.Phone).HasMaxLength(30);
+        builder.HasIndex(u => u.Phone).IsUnique();
+
+        builder.Property(u => u.FirstName).HasMaxLength(100);
+        builder.Property(u => u.LastName).HasMaxLength(100);
+
+        builder.Property(u => u.PasswordHash).HasMaxLength(256); // nullable
+        builder.Property(u => u.EmailConfirmed).IsRequired();
+        builder.Property(u => u.Role).HasConversion<int>().IsRequired();
+        builder.Property(u => u.OrganizationId);
+        builder.HasIndex(u => u.OrganizationId);
+        builder.Property(u => u.IsActive).IsRequired();
+        builder.Property(u => u.CreatedAt).IsRequired();
+
+        builder.HasMany(u => u.RefreshTokens)
+            .WithOne(rt => rt.User)
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(u => u.ExternalLogins)
+            .WithOne(el => el.User)
+            .HasForeignKey(el => el.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Metadata.FindNavigation(nameof(User.RefreshTokens))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Metadata.FindNavigation(nameof(User.ExternalLogins))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+    }
+}

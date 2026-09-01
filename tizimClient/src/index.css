@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 25% 5%;
+    --foreground: 213 31% 91%;
+    --card: 240 17% 8%;
+    --card-foreground: 213 31% 91%;
+    --popover: 240 17% 9%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 184 100% 50%;
+    --primary-foreground: 240 25% 5%;
+    --secondary: 240 15% 13%;
+    --secondary-foreground: 213 31% 91%;
+    --muted: 240 15% 12%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 240 15% 15%;
+    --accent-foreground: 213 31% 91%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 15% 14%;
+    --input: 240 15% 14%;
+    --ring: 184 100% 50%;
+    --radius: 0.75rem;
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(240 17% 8%);
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(240 15% 20%);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(184 100% 50% / 0.5);
+}
+
+/* Glow utilities */
+.glow-cyan {
+  box-shadow: 0 0 20px hsl(184 100% 50% / 0.3);
+}
+.glow-cyan-sm {
+  box-shadow: 0 0 10px hsl(184 100% 50% / 0.2);
+}
+.text-glow-cyan {
+  text-shadow: 0 0 20px hsl(184 100% 50% / 0.5);
+}
