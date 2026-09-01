@@ -37,8 +37,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Pre-existing lint issues are not yet fixed (tracked separately) —
-      # surfaced here but not blocking the pipeline.
-      - name: Lint (non-blocking)
+      - name: Lint
         run: npm run lint
-        continue-on-error: true

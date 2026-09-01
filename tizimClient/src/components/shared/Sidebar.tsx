@@ -17,6 +17,7 @@ import {
   DoorOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getApiErrorMessage } from "@/lib/errors";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth";
 import { useBranchStore } from "@/store/branch";
@@ -392,7 +393,7 @@ function SettingsModal({ user, onClose }: { user: AuthUser | null; onClose: () =
       setSuccess(t.credentialsSaved);
       setPassword(""); setConfirmPassword("");
     } catch (e: unknown) {
-      const msg = (e as any)?.response?.data?.detail ?? (e as any)?.response?.data?.title;
+      const msg = getApiErrorMessage(e);
       setError(msg ?? t.error);
     } finally {
       setSaving(false);

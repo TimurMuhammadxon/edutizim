@@ -6,6 +6,7 @@ import { studentsApi } from "@/api/students";
 import { membersApi } from "@/api/members";
 import { roomsApi } from "@/api/rooms";
 import { financeApi } from "@/api/finance";
+import { getApiErrorMessage } from "@/lib/errors";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,7 +88,7 @@ export function GroupProfilePage() {
     mutationFn: (roomId: string | null) => groupsApi.assignRoom(groupId!, roomId),
     onSuccess: () => { invalidate(); toast({ title: "Xona tayinlandi" }); },
     onError: (e: unknown) => {
-      const msg = (e as any)?.response?.data?.detail;
+      const msg = getApiErrorMessage(e);
       toast({ title: "Xatolik", description: msg ?? "Xonani tayinlab bo'lmadi", variant: "destructive" });
     },
   });
@@ -96,7 +97,7 @@ export function GroupProfilePage() {
     mutationFn: (studentId: string) => groupsApi.addStudent(groupId!, studentId),
     onSuccess: () => { invalidate(); setAddStudentId(""); toast({ title: "Talaba qo'shildi" }); },
     onError: (e: unknown) => {
-      const msg = (e as any)?.response?.data?.detail;
+      const msg = getApiErrorMessage(e);
       toast({ title: "Xatolik", description: msg ?? "Talaba qo'shib bo'lmadi", variant: "destructive" });
     },
   });

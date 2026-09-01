@@ -99,9 +99,13 @@ function TelegramAutoLogin({ children }: { children: ReactNode }) {
       }
     }
 
-    if (!initData || isAuthenticated()) {
+    const finish = () => {
       tg?.ready();
       setReady(true);
+    };
+
+    if (!initData || isAuthenticated()) {
+      Promise.resolve().then(finish);
       return;
     }
 
@@ -109,11 +113,8 @@ function TelegramAutoLogin({ children }: { children: ReactNode }) {
       .telegramLogin(initData)
       .then((res) => setTokens(res.accessToken, res.refreshToken))
       .catch(() => {})
-      .finally(() => {
-        tg?.ready();
-        setReady(true);
-      });
-  }, []);
+      .finally(finish);
+  }, [isAuthenticated, setTokens]);
 
   if (!ready) {
     return (

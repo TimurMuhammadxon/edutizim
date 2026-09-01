@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { studentsApi } from "@/api/students";
 import { groupsApi } from "@/api/groups";
 import { financeApi } from "@/api/finance";
+import { getApiErrorMessage } from "@/lib/errors";
 import { useBranchStore } from "@/store/branch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -242,7 +243,7 @@ export function StudentProfilePage() {
       toast({ title: "Guruhga qo'shildi" });
     },
     onError: (e: unknown) => {
-      const msg = (e as any)?.response?.data?.detail;
+      const msg = getApiErrorMessage(e);
       toast({ title: "Xatolik", description: msg ?? "Guruhga qo'shib bo'lmadi", variant: "destructive" });
     },
   });

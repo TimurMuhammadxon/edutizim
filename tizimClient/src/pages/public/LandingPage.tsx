@@ -89,7 +89,7 @@ export function LandingPage() {
       navigate("/home", { replace: true });
       return;
     }
-    setMounted(true);
+    const raf = requestAnimationFrame(() => setMounted(true));
     if (!document.getElementById("lp-fonts")) {
       const link = document.createElement("link");
       link.id = "lp-fonts";
@@ -97,7 +97,8 @@ export function LandingPage() {
       link.href = "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap";
       document.head.appendChild(link);
     }
-  }, []);
+    return () => cancelAnimationFrame(raf);
+  }, [navigate]);
 
   return (
     <div

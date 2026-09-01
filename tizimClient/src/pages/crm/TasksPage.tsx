@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { tasksApi } from "@/api/tasks";
 import { leadsApi } from "@/api/leads";
 import { useAuthStore } from "@/store/auth";
@@ -62,9 +62,14 @@ export function TasksPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["crm-tasks"] }),
   });
 
-  if (isLoading) return <PageLoader />;
+  // Date.now() must run in an effect, not during render (React purity rule) — until
+  // it fires, `overdue` below just treats every task as not-yet-overdue for one tick.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    Promise.resolve().then(() => setNow(Date.now()));
+  }, [data]);
 
-  const now = Date.now();
+  if (isLoading) return <PageLoader />;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -81,7 +86,7 @@ export function TasksPage() {
 
       <div className="space-y-3">
         {data?.items.map((task) => {
-          const overdue = new Date(task.dueAt).getTime() < now;
+          const overdue = now !== null && new Date(task.dueAt).getTime() < now;
           return (
             <Card key={task.id}>
               <CardContent className="p-4 flex items-start justify-between gap-4">
