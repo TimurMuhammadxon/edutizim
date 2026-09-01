@@ -15,7 +15,7 @@ import { toast } from "@/components/ui/use-toast";
 import { getApiErrorMessage } from "@/lib/errors";
 import { useTranslation, type Translations } from "@/lib/i18n";
 import { Trash2, Search, X, Wallet, AlertTriangle, Users } from "lucide-react";
-import { PAYMENT_METHOD_LABELS, formatMonthLabel } from "@/lib/groupHelpers";
+import { paymentMethodLabels, formatMonthLabel } from "@/lib/groupHelpers";
 
 interface Filters {
   search: string;
@@ -381,7 +381,7 @@ function PaymentsTab({ apiParams, t }: { apiParams: FinanceFilterParams; t: Tran
                 <TableCell className="text-sm">{p.amount.toLocaleString()} so'm</TableCell>
                 <TableCell className="text-sm">{formatMonthLabel(p.forMonth)}</TableCell>
                 <TableCell className="text-sm">
-                  <Badge variant="outline" className="text-xs">{PAYMENT_METHOD_LABELS[p.method]}</Badge>
+                  <Badge variant="outline" className="text-xs">{paymentMethodLabels(t)[p.method]}</Badge>
                 </TableCell>
                 <TableCell className="text-sm">{p.paidAt}</TableCell>
                 <TableCell className="text-right">

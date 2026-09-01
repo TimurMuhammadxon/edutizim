@@ -109,11 +109,12 @@ by self-registration). Authorization policies (`Domain/Authorization/Roles.cs` +
 Three: `uz-latn` (default), `ru`, `uz-cyrl`. Backend constants in
 `Application/Common/Constants/Languages.cs`. Frontend: every CRM/admin page goes through
 `useTranslation()` (`tizimClient/src/lib/i18n.ts`) — keep new pages on this pattern, adding
-the same key to all three locale blocks. One known gap: the enum-label lookup tables in
-`tizimClient/src/lib/groupHelpers.ts` (membership status, days of week, payment methods,
-month names) are plain Uzbek-only constants, not wired to `t` — they're shared across
-multiple files and aren't React components, so converting them needs a different shape
-(functions taking `t`) than the page-level conversion.
+the same key to all three locale blocks. The enum-label lookup tables in
+`tizimClient/src/lib/groupHelpers.ts` (membership status, days of week, payment methods)
+are functions taking `t: Translations` (e.g. `membershipStatusLabels(t)[status]`) rather than
+plain constants, since they're shared across multiple files and aren't React components
+themselves — call them with the caller's `t` from `useTranslation()`. `formatMonthLabel`
+(month names) is still Uzbek-only — no locale plumbing yet.
 
 ## Modules (current, 2026-09-01)
 
@@ -124,7 +125,11 @@ Entities: `User`, `RefreshToken`, `ExternalLogin`.
 - **Leads** (`LeadsController`, `/crm/leads`) — pipeline stage (`LeadStage`), manager
   assignment, convert-to-student.
 - **Students** (`StudentsController`, `/crm/students`) — profile, attendance history,
-  can get a login (`POST /crm/students/{id}/login`) to self-serve later.
+  can get a login (`POST /crm/students/{id}/login`) to self-serve later. List filtering
+  (`GetStudentsHandler`) has a `financialStatus` filter: `PaidThisMonth`/`WithDiscount` are
+  plain SQL predicates, but `WithDebt`/`WithoutDebt`/`PositiveBalance` need `BalanceCalculator`
+  and so materialize every matching student's memberships/payments in-memory before paging —
+  same accepted trade-off as the debtor reports below.
 - **Groups** (`GroupsController`, `/crm/groups`) — teacher/room assignment, schedule,
   membership (add/remove student, freeze/unfreeze/mark-left via `GroupStudent`), per-student
   discounts, attendance marking. This is the largest, most cross-cutting controller.

@@ -1,8 +1,9 @@
 import type { GroupMembershipStatus, GroupStudentDto, DayOfWeek, PaymentMethod } from "@/types";
+import type { Translations } from "@/lib/i18n";
 
-export const MEMBERSHIP_STATUS_LABELS: Record<GroupMembershipStatus, string> = {
-  Trial: "Sinov darsida", Active: "Faol", Frozen: "Muzlatilgan", Left: "Ketgan",
-};
+export function membershipStatusLabels(t: Translations): Record<GroupMembershipStatus, string> {
+  return { Trial: t.studentTrial, Active: t.studentActive, Frozen: t.studentFrozen, Left: t.left };
+}
 
 export function membershipBadgeVariant(s: GroupStudentDto): "success" | "destructive" | "warning" | "secondary" | "outline" {
   if (s.status === "Active") return s.isDebtor ? "destructive" : "success";
@@ -12,10 +13,12 @@ export function membershipBadgeVariant(s: GroupStudentDto): "success" | "destruc
 }
 
 export const DAYS: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-export const DAY_LABELS: Record<DayOfWeek, string> = {
-  Monday: "Dush", Tuesday: "Sesh", Wednesday: "Chor", Thursday: "Pay",
-  Friday: "Jum", Saturday: "Shan", Sunday: "Yak",
-};
+export function dayLabels(t: Translations): Record<DayOfWeek, string> {
+  return {
+    Monday: t.dayLabelMonday, Tuesday: t.dayLabelTuesday, Wednesday: t.dayLabelWednesday, Thursday: t.dayLabelThursday,
+    Friday: t.dayLabelFriday, Saturday: t.dayLabelSaturday, Sunday: t.dayLabelSunday,
+  };
+}
 export const ODD_DAYS: DayOfWeek[] = ["Monday", "Wednesday", "Friday"];
 export const EVEN_DAYS: DayOfWeek[] = ["Tuesday", "Thursday", "Saturday"];
 
@@ -31,9 +34,12 @@ export function addHours(time: string, hours: number): string {
   return `${hh}:${mm}`;
 }
 
-export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  Cash: "Naqd", Card: "Karta", Click: "Click", Payme: "Payme", BankTransfer: "Bank o'tkazmasi", Other: "Boshqa",
-};
+export function paymentMethodLabels(t: Translations): Record<PaymentMethod, string> {
+  return {
+    Cash: t.paymentMethodCash, Card: t.paymentMethodCard, Click: t.paymentMethodClick,
+    Payme: t.paymentMethodPayme, BankTransfer: t.paymentMethodBankTransfer, Other: t.paymentMethodOther,
+  };
+}
 export const PAYMENT_METHODS: PaymentMethod[] = ["Cash", "Card", "Click", "Payme", "BankTransfer", "Other"];
 
 const MONTH_LABELS = [

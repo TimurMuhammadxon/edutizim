@@ -25,7 +25,7 @@ import {
   ArrowLeft, KeyRound, Wallet, UserPlus, Layers, CalendarCheck2,
   Building2, CalendarClock, StickyNote, Pencil, ChevronLeft, ChevronRight, Check, X,
 } from "lucide-react";
-import { MEMBERSHIP_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_METHODS, formatMonthLabel, formatPhone } from "@/lib/groupHelpers";
+import { membershipStatusLabels, paymentMethodLabels, PAYMENT_METHODS, formatMonthLabel, formatPhone } from "@/lib/groupHelpers";
 import type { PaymentMethod, StudentDetailsDto } from "@/types";
 
 type EditFormState = { fullName: string; phone: string; email: string; notes: string };
@@ -378,7 +378,7 @@ export function StudentProfilePage() {
                   <div className="min-w-0">
                     <div className="font-medium flex items-center gap-2 flex-wrap">
                       {g.groupName}
-                      <Badge variant="secondary" className="text-xs">{MEMBERSHIP_STATUS_LABELS[g.status]}</Badge>
+                      <Badge variant="secondary" className="text-xs">{membershipStatusLabels(t)[g.status]}</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
                       {g.teacherName ?? t.noTeacherAssigned} · {g.presentCount} {t.presentSuffix} / {g.absentCount} {t.absentSuffix}
@@ -417,7 +417,7 @@ export function StudentProfilePage() {
                       <TableCell className="text-sm">{p.amount.toLocaleString()} so'm</TableCell>
                       <TableCell className="text-sm">{formatMonthLabel(p.forMonth)}</TableCell>
                       <TableCell className="text-sm">
-                        <Badge variant="outline" className="text-xs">{PAYMENT_METHOD_LABELS[p.method]}</Badge>
+                        <Badge variant="outline" className="text-xs">{paymentMethodLabels(t)[p.method]}</Badge>
                       </TableCell>
                       <TableCell className="text-sm">{p.paidAt}</TableCell>
                     </TableRow>
@@ -591,7 +591,7 @@ export function StudentProfilePage() {
                 </SelectTrigger>
                 <SelectContent>
                   {PAYMENT_METHODS.map((m) => (
-                    <SelectItem key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</SelectItem>
+                    <SelectItem key={m} value={m}>{paymentMethodLabels(t)[m]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

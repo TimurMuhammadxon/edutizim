@@ -139,7 +139,7 @@ export function Sidebar({ collapsed, onToggle, mobile, onClose }: SidebarProps) 
           <div className="flex items-center gap-2.5 min-w-0 cursor-pointer" onClick={() => navigate("/")}>
             <img
               src="/pravadrive-logo-horizontal.svg"
-              alt="pravadrive"
+              alt="Tizim"
               style={{ height: 36, width: "auto", maxWidth: 150 }}
             />
           </div>

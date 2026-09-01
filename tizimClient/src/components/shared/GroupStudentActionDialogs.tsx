@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MonthYearPicker } from "@/components/shared/MonthYearPicker";
-import { PAYMENT_METHOD_LABELS, PAYMENT_METHODS } from "@/lib/groupHelpers";
+import { paymentMethodLabels, PAYMENT_METHODS } from "@/lib/groupHelpers";
 import { useTranslation } from "@/lib/i18n";
 import type { GroupStudentDto, PaymentMethod } from "@/types";
 
@@ -57,7 +57,7 @@ export function RecordPaymentDialog({
               </SelectTrigger>
               <SelectContent>
                 {PAYMENT_METHODS.map((m) => (
-                  <SelectItem key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</SelectItem>
+                  <SelectItem key={m} value={m}>{paymentMethodLabels(t)[m]}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

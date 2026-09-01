@@ -20,8 +20,8 @@ public class GetLeadsHandler : IRequestHandler<GetLeadsQuery, PagedResult<LeadDt
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
-            var term = request.Search.Trim();
-            query = query.Where(l => l.FullName.Contains(term) || l.Phone.Contains(term));
+            var term = request.Search.Trim().ToLower();
+            query = query.Where(l => l.FullName.ToLower().Contains(term) || l.Phone.ToLower().Contains(term));
         }
 
         if (request.Source.HasValue)

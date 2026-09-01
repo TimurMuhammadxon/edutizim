@@ -66,7 +66,20 @@ public class GetStudentsHandler : IRequestHandler<GetStudentsQuery, PagedResult<
             _ => query,
         };
 
-        if (string.IsNullOrWhiteSpace(request.FinancialStatus))
+        // "PaidThisMonth" and "WithDiscount" are plain column/date-range checks, expressible
+        // directly in SQL — only the balance-based filters below need BalanceCalculator's
+        // calendar-month logic, which can't be translated to SQL.
+        query = request.FinancialStatus switch
+        {
+            "PaidThisMonth" => query.Where(s =>
+                _db.TuitionPayments.Any(p => p.StudentId == s.Id && p.PaidAt >= monthStart && p.PaidAt < nextMonth)),
+            "WithDiscount" => query.Where(s => _db.GroupStudents.Any(gs =>
+                gs.StudentId == s.Id && gs.DiscountedPrice != null && gs.DiscountStartDate != null && gs.DiscountEndDate != null
+                && gs.DiscountStartDate <= today && gs.DiscountEndDate >= today)),
+            _ => query,
+        };
+
+        if (request.FinancialStatus is null or "PaidThisMonth" or "WithDiscount")
         {
             var total = await query.CountAsync(ct);
 
@@ -81,8 +94,12 @@ public class GetStudentsHandler : IRequestHandler<GetStudentsQuery, PagedResult<
             return new PagedResult<StudentDto>(items, page, size, total);
         }
 
-        // Financial filters need per-membership Balance (via BalanceCalculator), which can't be
-        // expressed in SQL — materialize the candidates first, then filter/paginate in memory.
+        // Remaining filters (WithDebt/WithoutDebt/PositiveBalance) need per-membership Balance
+        // (via BalanceCalculator), which can't be expressed in SQL — materialize the candidates
+        // first, then filter/paginate in memory. Known scaling limit: for large orgs this loads
+        // every matching student's memberships/payments before paging, same accepted trade-off
+        // as GetDebtors/GetPeriodDebts (see CLAUDE.md) — pending a real design (e.g. a
+        // precomputed balance column), not an oversight.
         var candidates = await query
             .OrderByDescending(s => s.CreatedAt)
             .Select(s => new StudentDto(
@@ -103,15 +120,7 @@ public class GetStudentsHandler : IRequestHandler<GetStudentsQuery, PagedResult<
 
         bool Matches(Guid studentId)
         {
-            if (request.FinancialStatus == "PaidThisMonth")
-                return payments.Any(p => p.StudentId == studentId && p.PaidAt >= monthStart && p.PaidAt < nextMonth);
-
             var studentMemberships = memberships.Where(m => m.Membership.StudentId == studentId).ToList();
-
-            if (request.FinancialStatus == "WithDiscount")
-                return studentMemberships.Any(m =>
-                    m.Membership.DiscountedPrice.HasValue && m.Membership.DiscountStartDate.HasValue && m.Membership.DiscountEndDate.HasValue
-                    && m.Membership.DiscountStartDate.Value <= today && m.Membership.DiscountEndDate.Value >= today);
 
             var balances = studentMemberships
                 .Where(m => m.Membership.ActivatedAt != null)

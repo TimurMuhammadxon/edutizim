@@ -28,8 +28,8 @@ import {
   ArrowLeft, Plus, Trash2, Wallet, Snowflake, Percent, MoreVertical, Users,
 } from "lucide-react";
 import {
-  MEMBERSHIP_STATUS_LABELS, membershipBadgeVariant,
-  DAYS, DAY_LABELS, ODD_DAYS, EVEN_DAYS, withSeconds, addHours,
+  membershipStatusLabels, membershipBadgeVariant,
+  DAYS, dayLabels, ODD_DAYS, EVEN_DAYS, withSeconds, addHours,
 } from "@/lib/groupHelpers";
 import type { GroupScheduleSlotDto, GroupMembershipStatus, GroupStudentDto, DayOfWeek } from "@/types";
 
@@ -288,7 +288,7 @@ export function GroupProfilePage() {
                     <span className="text-xs text-muted-foreground w-4 text-right flex-shrink-0">{i + 1}.</span>
                     <span
                       className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${s.balance < 0 ? "bg-destructive" : "bg-emerald-500"}`}
-                      title={s.isDebtor ? t.debtorBadge : MEMBERSHIP_STATUS_LABELS[s.status]}
+                      title={s.isDebtor ? t.debtorBadge : membershipStatusLabels(t)[s.status]}
                     />
                     <button
                       className="text-sm font-medium hover:underline truncate flex-1 text-left min-w-0"
@@ -299,7 +299,7 @@ export function GroupProfilePage() {
                     </button>
                     {s.status !== "Active" && (
                       <Badge variant={membershipBadgeVariant(s)} className="text-[10px] px-1.5 py-0 flex-shrink-0">
-                        {MEMBERSHIP_STATUS_LABELS[s.status]}
+                        {membershipStatusLabels(t)[s.status]}
                       </Badge>
                     )}
                     <span className={`text-xs font-medium flex-shrink-0 ${s.balance < 0 ? "text-destructive" : "text-emerald-500"}`}>
@@ -393,7 +393,7 @@ export function GroupProfilePage() {
                         </SelectTrigger>
                         <SelectContent>
                           {DAYS.map((day) => (
-                            <SelectItem key={day} value={day}>{DAY_LABELS[day]}</SelectItem>
+                            <SelectItem key={day} value={day}>{dayLabels(t)[day]}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

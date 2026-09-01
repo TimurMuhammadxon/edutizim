@@ -166,7 +166,7 @@ export function LandingPage() {
         </header>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "48px 28px 0", animation: mounted ? "lp-fadeUp .7s ease both" : "none" }}>
-          <img src="/pravadrive-logo-horizontal.svg" alt="PravaDrive" style={{ height: 72, width: "auto" }} />
+          <img src="/pravadrive-logo-horizontal.svg" alt="Tizim" style={{ height: 72, width: "auto" }} />
         </div>
 
         <section style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px", textAlign: "center" }}>
@@ -271,15 +271,7 @@ export function LandingPage() {
               </div>
 
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <a href="https://t.me/PravaDriveUz" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#94a3b8", textDecoration: "none", padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)", transition: "all .2s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,240,255,0.2)"; e.currentTarget.style.color = "#00f0ff"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#94a3b8"; }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.65l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.909z"/></svg>
-                  Guruh
-                </a>
-                <a href="https://t.me/PravaDriveUzb" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#94a3b8", textDecoration: "none", padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)", transition: "all .2s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,240,255,0.2)"; e.currentTarget.style.color = "#00f0ff"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#94a3b8"; }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.65l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.909z"/></svg>
-                  Kanal
-                </a>
-                <a href="https://t.me/pravadrive_bot" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#94a3b8", textDecoration: "none", padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)", transition: "all .2s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,240,255,0.2)"; e.currentTarget.style.color = "#00f0ff"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#94a3b8"; }}>
+                <a href={`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#94a3b8", textDecoration: "none", padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)", transition: "all .2s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,240,255,0.2)"; e.currentTarget.style.color = "#00f0ff"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#94a3b8"; }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.65l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.909z"/></svg>
                   Bot
                 </a>
