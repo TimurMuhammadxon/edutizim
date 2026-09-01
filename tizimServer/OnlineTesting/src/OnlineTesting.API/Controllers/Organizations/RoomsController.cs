@@ -11,6 +11,7 @@ namespace OnlineTesting.API.Controllers.Organizations;
 
 [ApiController]
 [Route("org/rooms")]
+[Authorize]
 public class RoomsController : ControllerBase
 {
     private readonly ISender _sender;

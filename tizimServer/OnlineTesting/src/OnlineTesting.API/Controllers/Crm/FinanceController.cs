@@ -63,21 +63,25 @@ public class FinanceController : ControllerBase
 
     [HttpGet("debtors")]
     [Authorize(Policy = Roles.Policies.GroupsAccess)]
-    public Task<List<DebtorDto>> GetDebtors(
+    public Task<PagedResult<DebtorDto>> GetDebtors(
         [FromQuery] Guid? branchId,
         [FromQuery] Guid? groupId,
         [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
         CancellationToken ct = default)
-        => _sender.Send(new GetDebtorsQuery(branchId, groupId, search), ct);
+        => _sender.Send(new GetDebtorsQuery(branchId, groupId, search, page, pageSize), ct);
 
     [HttpGet("period-debts")]
     [Authorize(Policy = Roles.Policies.GroupsAccess)]
-    public Task<List<PeriodDebtDto>> GetPeriodDebts(
+    public Task<PagedResult<PeriodDebtDto>> GetPeriodDebts(
         [FromQuery] DateOnly fromDate,
         [FromQuery] DateOnly toDate,
         [FromQuery] Guid? branchId,
         [FromQuery] Guid? groupId,
         [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
         CancellationToken ct = default)
-        => _sender.Send(new GetPeriodDebtsQuery(fromDate, toDate, branchId, groupId, search), ct);
+        => _sender.Send(new GetPeriodDebtsQuery(fromDate, toDate, branchId, groupId, search, page, pageSize), ct);
 }

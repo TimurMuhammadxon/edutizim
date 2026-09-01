@@ -34,6 +34,12 @@ builder.Services.AddAuthorization(options =>
         p.RequireRole(Roles.Owner, Roles.SuperAdmin, Roles.OrgAdmin, Roles.Staff));
     options.AddPolicy(Roles.Policies.GroupsAccess, p =>
         p.RequireRole(Roles.Owner, Roles.SuperAdmin, Roles.OrgAdmin, Roles.Staff, Roles.Teacher));
+
+    // Defense-in-depth: any endpoint without an explicit [Authorize]/[AllowAnonymous]
+    // requires authentication by default, instead of silently becoming public.
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
 });
 
 builder.Services.AddRateLimiter(options =>

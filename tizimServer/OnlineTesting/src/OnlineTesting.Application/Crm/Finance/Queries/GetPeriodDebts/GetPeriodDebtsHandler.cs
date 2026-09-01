@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OnlineTesting.Application.Common.Interfaces;
+using OnlineTesting.Application.Common.Models;
 using OnlineTesting.Domain.Crm;
 using OnlineTesting.Domain.Users;
 
@@ -8,7 +9,7 @@ namespace OnlineTesting.Application.Crm.Finance.Queries.GetPeriodDebts;
 
 /// Which specific months (within the requested date range) a membership still owes money for —
 /// as opposed to GetDebtorsQuery, which reports only the current, as-of-today aggregate balance.
-public class GetPeriodDebtsHandler : IRequestHandler<GetPeriodDebtsQuery, List<PeriodDebtDto>>
+public class GetPeriodDebtsHandler : IRequestHandler<GetPeriodDebtsQuery, PagedResult<PeriodDebtDto>>
 {
     private readonly IApplicationDbContext _db;
     private readonly ICurrentUser _currentUser;
@@ -19,7 +20,7 @@ public class GetPeriodDebtsHandler : IRequestHandler<GetPeriodDebtsQuery, List<P
         _currentUser = currentUser;
     }
 
-    public async Task<List<PeriodDebtDto>> Handle(GetPeriodDebtsQuery request, CancellationToken ct)
+    public async Task<PagedResult<PeriodDebtDto>> Handle(GetPeriodDebtsQuery request, CancellationToken ct)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
@@ -98,6 +99,12 @@ public class GetPeriodDebtsHandler : IRequestHandler<GetPeriodDebtsQuery, List<P
                 months));
         }
 
-        return result.OrderByDescending(d => d.AmountOwedInPeriod).ToList();
+        var ordered = result.OrderByDescending(d => d.AmountOwedInPeriod).ToList();
+
+        var page = Math.Max(1, request.Page);
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var pageItems = ordered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        return new PagedResult<PeriodDebtDto>(pageItems, page, pageSize, ordered.Count);
     }
 }

@@ -25,6 +25,7 @@ namespace OnlineTesting.API.Controllers.Crm;
 
 [ApiController]
 [Route("crm/groups")]
+[Authorize]
 public class GroupsController : ControllerBase
 {
     private readonly ISender _sender;

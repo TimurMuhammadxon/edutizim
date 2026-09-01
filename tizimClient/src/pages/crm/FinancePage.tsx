@@ -81,17 +81,19 @@ export function FinancePage() {
     queryFn: () => financeApi.getPaymentsSummary(apiParams),
   });
 
-  const { data: periodDebts } = useQuery({
+  const { data: periodDebtsResult } = useQuery({
     queryKey: ["finance-period-debts", apiParams],
-    queryFn: () => financeApi.getPeriodDebts({ ...apiParams, fromDate: filters.fromDate, toDate: filters.toDate }),
+    queryFn: () => financeApi.getPeriodDebts({ ...apiParams, fromDate: filters.fromDate, toDate: filters.toDate, pageSize: 200 }),
   });
+  const periodDebts = periodDebtsResult?.items;
 
-  const { data: currentDebtors } = useQuery({
+  const { data: currentDebtorsResult } = useQuery({
     queryKey: ["finance-debtors", filters.branchId, filters.groupId, filters.search],
     queryFn: () => financeApi.getDebtors({
-      branchId: apiParams.branchId, groupId: apiParams.groupId, search: apiParams.search,
+      branchId: apiParams.branchId, groupId: apiParams.groupId, search: apiParams.search, pageSize: 200,
     }),
   });
+  const currentDebtors = currentDebtorsResult?.items;
 
   const periodDebtTotal = periodDebts?.reduce((sum, d) => sum + d.amountOwedInPeriod, 0) ?? 0;
 

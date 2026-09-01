@@ -79,11 +79,11 @@ export function StudentsPage() {
     queryFn: () => groupsApi.list({ branchId: branchId ?? undefined, pageSize: 200 }),
   });
 
-  const { data: debtors } = useQuery({
+  const { data: debtorsResult } = useQuery({
     queryKey: ["finance-debtors"],
-    queryFn: () => financeApi.getDebtors(),
+    queryFn: () => financeApi.getDebtors({ pageSize: 200 }),
   });
-  const debtorStudentIds = new Set(debtors?.map((d) => d.studentId));
+  const debtorStudentIds = new Set(debtorsResult?.items.map((d) => d.studentId));
 
   const createMutation = useMutation({
     mutationFn: () =>

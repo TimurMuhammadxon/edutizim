@@ -12,6 +12,7 @@ namespace OnlineTesting.API.Controllers.Organizations;
 
 [ApiController]
 [Route("org/branches")]
+[Authorize]
 public class BranchesController : ControllerBase
 {
     private readonly ISender _sender;

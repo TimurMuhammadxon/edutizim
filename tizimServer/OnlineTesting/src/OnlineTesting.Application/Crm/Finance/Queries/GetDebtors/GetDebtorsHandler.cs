@@ -1,12 +1,13 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OnlineTesting.Application.Common.Interfaces;
+using OnlineTesting.Application.Common.Models;
 using OnlineTesting.Domain.Crm;
 using OnlineTesting.Domain.Users;
 
 namespace OnlineTesting.Application.Crm.Finance.Queries.GetDebtors;
 
-public class GetDebtorsHandler : IRequestHandler<GetDebtorsQuery, List<DebtorDto>>
+public class GetDebtorsHandler : IRequestHandler<GetDebtorsQuery, PagedResult<DebtorDto>>
 {
     private readonly IApplicationDbContext _db;
     private readonly ICurrentUser _currentUser;
@@ -17,7 +18,7 @@ public class GetDebtorsHandler : IRequestHandler<GetDebtorsQuery, List<DebtorDto
         _currentUser = currentUser;
     }
 
-    public async Task<List<DebtorDto>> Handle(GetDebtorsQuery request, CancellationToken ct)
+    public async Task<PagedResult<DebtorDto>> Handle(GetDebtorsQuery request, CancellationToken ct)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
@@ -77,6 +78,12 @@ public class GetDebtorsHandler : IRequestHandler<GetDebtorsQuery, List<DebtorDto
                 x.Group.Id, x.Group.Name, effectivePrice, balance, nextDueDate.Value, daysOverdue));
         }
 
-        return debtors.OrderBy(d => d.Balance).ToList();
+        var ordered = debtors.OrderBy(d => d.Balance).ToList();
+
+        var page = Math.Max(1, request.Page);
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var pageItems = ordered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        return new PagedResult<DebtorDto>(pageItems, page, pageSize, ordered.Count);
     }
 }

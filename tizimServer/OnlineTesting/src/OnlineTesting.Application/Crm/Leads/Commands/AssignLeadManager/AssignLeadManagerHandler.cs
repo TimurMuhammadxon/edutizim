@@ -16,6 +16,14 @@ public class AssignLeadManagerHandler : IRequestHandler<AssignLeadManagerCommand
         var lead = await _db.Leads.FirstOrDefaultAsync(l => l.Id == request.Id, ct)
             ?? throw new NotFoundException($"Lead '{request.Id}' not found.");
 
+        if (request.ManagerId.HasValue)
+        {
+            var managerExists = await _db.Users.AnyAsync(
+                u => u.Id == request.ManagerId.Value && u.OrganizationId == lead.OrganizationId, ct);
+            if (!managerExists)
+                throw new NotFoundException($"Manager '{request.ManagerId}' not found.");
+        }
+
         lead.AssignManager(request.ManagerId);
         await _db.SaveChangesAsync(ct);
     }

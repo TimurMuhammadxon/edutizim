@@ -26,9 +26,9 @@ export const financeApi = {
   deletePayment: (id: string) =>
     api.delete(`/crm/finance/payments/${id}`),
 
-  getDebtors: (params?: { branchId?: string; groupId?: string; search?: string }) =>
-    api.get<DebtorDto[]>("/crm/finance/debtors", { params }).then((r) => r.data),
+  getDebtors: (params?: { branchId?: string; groupId?: string; search?: string; page?: number; pageSize?: number }) =>
+    api.get<PagedResult<DebtorDto>>("/crm/finance/debtors", { params }).then((r) => r.data),
 
-  getPeriodDebts: (params: { fromDate: string; toDate: string; branchId?: string; groupId?: string; search?: string }) =>
-    api.get<PeriodDebtDto[]>("/crm/finance/period-debts", { params }).then((r) => r.data),
+  getPeriodDebts: (params: { fromDate: string; toDate: string; branchId?: string; groupId?: string; search?: string; page?: number; pageSize?: number }) =>
+    api.get<PagedResult<PeriodDebtDto>>("/crm/finance/period-debts", { params }).then((r) => r.data),
 };
