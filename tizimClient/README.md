@@ -1,73 +1,43 @@
-# React + TypeScript + Vite
+# edutizim — client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite frontend for **edutizim**, a multi-tenant CRM/ERP/LMS platform for training centers (o'quv markazlar). Talks to the .NET backend in `../tizimServer/OnlineTesting`.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19, TypeScript, Vite
+- react-router-dom v7, @tanstack/react-query v5, zustand v5
+- react-hook-form + zod, axios, Radix UI + Tailwind (shadcn-style)
+- Vitest for tests
 
-## React Compiler
+## Getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev      # dev server, proxies /api to the backend on :5008
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The backend (Postgres + MinIO via `docker-compose.yml`, then `dotnet run`) needs to be running for anything past the public landing/login pages — see `../tizimServer/OnlineTesting/CLAUDE.md`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Command | Does |
+|---|---|
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Type-check (`tsc -b`) then production build |
+| `npm run lint` | ESLint, blocking in CI |
+| `npm run test` | Vitest |
+
+## Structure
+
 ```
+src/
+├── api/          # axios calls per domain (leads, students, groups, ...)
+├── components/   # shared/ (Logo, CrudTable, dialogs, ...) and ui/ (shadcn primitives)
+├── layouts/      # AppLayout (authenticated shell), AuthLayout, route guards
+├── lib/          # i18n.ts, session.ts, jwt.ts, errors.ts, groupHelpers.ts
+├── pages/        # route-level pages, grouped by area (crm/, admin/, public/, auth/)
+├── store/        # zustand stores (auth, branch, language, theme)
+└── types/        # shared DTO types
+```
+
+Three locales are supported (`uz-latn` default, `ru`, `uz-cyrl`) via `useTranslation()` in `src/lib/i18n.ts` — every CRM/admin page goes through it. See the backend `CLAUDE.md` for the fuller architecture writeup (multi-tenancy, auth, conventions) that covers both halves of the app.
