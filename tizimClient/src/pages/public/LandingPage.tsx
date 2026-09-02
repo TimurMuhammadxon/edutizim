@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/auth";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore, type LangCode } from "@/store/language";
 import { Users, Link2, BarChart3 } from "lucide-react";
+import { Logo, LogoMark } from "@/components/shared/Logo";
 
 const CSS = `
   @keyframes lp-pulse1{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.2);opacity:.9}}
@@ -166,7 +167,7 @@ export function LandingPage() {
         </header>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "48px 28px 0", animation: mounted ? "lp-fadeUp .7s ease both" : "none" }}>
-          <img src="/pravadrive-logo-horizontal.svg" alt="Tizim" style={{ height: 72, width: "auto" }} />
+          <Logo height={56} variant="reversed" />
         </div>
 
         <section style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px", textAlign: "center" }}>
@@ -265,8 +266,8 @@ export function LandingPage() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 24 }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <img src="/pravadrive-symbol.svg" alt="logo" style={{ height: 24, width: 24 }} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>Tizim</span>
+                  <LogoMark size={24} variant="reversed" />
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>edutizim</span>
                 </div>
               </div>
 
@@ -283,7 +284,7 @@ export function LandingPage() {
             </div>
 
             <div style={{ borderTop: "1px solid rgba(255,255,255,.04)", paddingTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-              <span style={{ fontSize: 12, color: "#334155" }}>© 2026 Tizim · O'zbekiston</span>
+              <span style={{ fontSize: 12, color: "#334155" }}>© 2026 edutizim · O'zbekiston</span>
               <span style={{ fontSize: 12, color: "#334155" }}>{t.footerTag}</span>
             </div>
           </div>

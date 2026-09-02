@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/store/auth";
-import { GraduationCap } from "lucide-react";
+import { LogoMark } from "@/components/shared/Logo";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore, type LangCode } from "@/store/language";
 
@@ -67,11 +67,11 @@ export function AuthLayout() {
           <div style={{
             display: "inline-flex", alignItems: "center", justifyContent: "center",
             width: "64px", height: "64px", borderRadius: "16px",
-            background: "linear-gradient(135deg, #00f0ff, #7c3aed)",
-            boxShadow: "0 0 30px rgba(0, 240, 255, 0.3), 0 0 60px rgba(124, 58, 237, 0.2)",
+            background: "linear-gradient(135deg, #22D3EE, #155E75)",
+            boxShadow: "0 0 30px rgba(34, 211, 238, 0.3), 0 0 60px rgba(21, 94, 117, 0.25)",
             marginBottom: "1rem",
           }}>
-            <GraduationCap style={{ width: "32px", height: "32px", color: "white" }} />
+            <LogoMark size={34} variant="reversed" />
           </div>
           <h1 style={{
             fontSize: "20px", fontWeight: 700, color: "#e2e8f0",

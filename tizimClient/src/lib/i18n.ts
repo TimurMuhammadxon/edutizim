@@ -72,18 +72,17 @@ const translations = {
     enterAccount: "Hisobingizga kiring",
     loadingText: "Yuklanmoqda...",
     loginOrPasswordWrong: "Login yoki parol noto'g'ri",
-    googleError: "Google orqali kirishda xatolik yuz berdi",
     telegramLogin: "Telegram orqali kirish",
     or: "yoki",
-    authTitle: "YO'L HARAKATI QOIDALARI",
-    authSubtitle: "Nazariy imtihonlarga tayyorgarlik tizimi",
+    authTitle: "EDUTIZIM",
+    authSubtitle: "O'quv markazingiz uchun yagona boshqaruv tizimi",
 
     // Dashboard
     dayMon: "Du", dayTue: "Se", dayWed: "Ch", dayThu: "Pa", dayFri: "Ju", daySat: "Sh", daySun: "Ya",
 
     // Landing
-    platformSubtitle: "Haydovchilik imtihoniga tayyorlanish platformasi",
-    footerTag: "Haydovchilik imtihoniga professional tayyorlanish",
+    platformSubtitle: "O'quv markazlar uchun CRM platforma",
+    footerTag: "Zamonaviy CRM, ERP va LMS yechimi",
 
     // Teacher Application
     fullName: "To'liq ism",
@@ -390,18 +389,17 @@ const translations = {
     enterAccount: "Войдите в аккаунт",
     loadingText: "Загрузка...",
     loginOrPasswordWrong: "Неверный логин или пароль",
-    googleError: "Ошибка входа через Google",
     telegramLogin: "Войти через Telegram",
     or: "или",
-    authTitle: "ПРАВИЛА ДОРОЖНОГО ДВИЖЕНИЯ",
-    authSubtitle: "Система подготовки к теоретическим экзаменам",
+    authTitle: "EDUTIZIM",
+    authSubtitle: "Единая система управления учебным центром",
 
     // Dashboard
     dayMon: "Пн", dayTue: "Вт", dayWed: "Ср", dayThu: "Чт", dayFri: "Пт", daySat: "Сб", daySun: "Вс",
 
     // Landing
-    platformSubtitle: "Платформа подготовки к экзамену по вождению",
-    footerTag: "Профессиональная подготовка к экзамену по вождению",
+    platformSubtitle: "CRM-платформа для учебных центров",
+    footerTag: "Современное CRM, ERP и LMS решение",
 
     // Teacher Application
     fullName: "Полное имя",
@@ -708,18 +706,17 @@ const translations = {
     enterAccount: "Ҳисобингизга киринг",
     loadingText: "Юкланмоқда...",
     loginOrPasswordWrong: "Логин ёки парол нотўғри",
-    googleError: "Google орқали киришда хатолик юз берди",
     telegramLogin: "Telegram орқали кириш",
     or: "ёки",
-    authTitle: "ЙЎЛ ҲАРАКАТИ ҚОИДАЛАРИ",
-    authSubtitle: "Назарий имтиҳонларга тайёргарлик тизими",
+    authTitle: "EDUTIZIM",
+    authSubtitle: "Ўқув марказингиз учун ягона бошқарув тизими",
 
     // Dashboard
     dayMon: "Ду", dayTue: "Се", dayWed: "Чо", dayThu: "Па", dayFri: "Жу", daySat: "Ша", daySun: "Як",
 
     // Landing
-    platformSubtitle: "Ҳайдовчилик имтиҳонига тайёрланиш платформаси",
-    footerTag: "Ҳайдовчилик имтиҳонига профессионал тайёрланиш",
+    platformSubtitle: "Ўқув марказлар учун CRM платформа",
+    footerTag: "Замонавий CRM, ERP ва LMS ечими",
 
     // Teacher Application
     fullName: "Тўлиқ исм",
